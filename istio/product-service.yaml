@@ -24,7 +24,7 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: product
+  name: product-v1
   labels:
     app: product
     version: v1
@@ -43,9 +43,36 @@ spec:
       serviceAccountName: product-details
       containers:
         - name: product
-          image: product:latest # Local image name
+          image: product:latest # Specifikujte sliku verzije v1
           imagePullPolicy: Never # Ensures Kubernetes doesn't try to pull from a registry
           ports:
             - containerPort: 9090
 
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-v2
+  labels:
+    app: product
+    version: v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: product
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: product
+        version: v2
+    spec:
+      serviceAccountName: product-details
+      containers:
+        - name: product
+          image: product:latest # Specifikujte sliku verzije v1
+          imagePullPolicy: Never # Ensures Kubernetes doesn't try to pull from a registry
+          ports:
+            - containerPort: 9090
 ---

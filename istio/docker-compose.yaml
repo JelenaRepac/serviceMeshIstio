@@ -1,0 +1,22 @@
+services:
+  product-service:
+    image: product:latest
+    container_name: product
+    ports:
+      - "9090:9090"
+    networks:
+      - app-network
+
+  order-service:
+    image: order:latest
+    container_name: order
+    ports:
+      - "8000:8000"
+    networks:
+      - app-network
+    depends_on:
+      - product-service
+
+networks:
+  app-network:
+    driver: bridge
