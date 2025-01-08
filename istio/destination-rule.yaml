@@ -1,5 +1,5 @@
 apiVersion: networking.istio.io/v1alpha3
-kind: DestinationRule
+kind: DestinationRule #Kontrola saobracaja izmedju razlicitih verzija
 metadata:
   name: product-destination
   namespace: default
@@ -12,3 +12,4 @@ spec:
     - name: v2
       labels:
         version: v2
+---

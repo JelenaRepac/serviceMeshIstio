@@ -1,78 +1,18 @@
-apiVersion: v1
-kind: Service
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
 metadata:
   name: product
-  labels:
-    app: product
-    service: product
 spec:
-  ports:
-  - port: 9090
-    name: http
-  selector:
-    app: product
-    
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: product-details
-  labels:
-    account: product
-    
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: product-v1
-  labels:
-    app: product
-    version: v1
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: product
-      version: v1
-  template:
-    metadata:
-      labels:
-        app: product
-        version: v1
-    spec:
-      serviceAccountName: product-details
-      containers:
-        - name: product
-          image: product:latest # Specifikujte sliku verzije v1
-          imagePullPolicy: Never # Ensures Kubernetes doesn't try to pull from a registry
-          ports:
-            - containerPort: 9090
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: product-v2
-  labels:
-    app: product
-    version: v2
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: product
-      version: v2
-  template:
-    metadata:
-      labels:
-        app: product
-        version: v2
-    spec:
-      serviceAccountName: product-details
-      containers:
-        - name: product
-          image: product:latest # Specifikujte sliku verzije v1
-          imagePullPolicy: Never # Ensures Kubernetes doesn't try to pull from a registry
-          ports:
-            - containerPort: 9090
+  hosts:
+    - product
+  http:
+    - route:
+        - destination:
+            host: product
+            subset: v1
+          weight: 100
+        - destination:
+            host: product
+            subset: v2
+          weight: 0
 ---
