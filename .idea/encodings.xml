@@ -3,7 +3,9 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/auth-api/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/auth-api/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/order-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/eureka/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/flight-api/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/product-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zuul/src/main/java" charset="UTF-8" />
   </component>
 </project>

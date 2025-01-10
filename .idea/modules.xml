@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/auth-api/auth-api.iml" filepath="$PROJECT_DIR$/auth-api/auth-api.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/istio-service-mesh.iml" filepath="$PROJECT_DIR$/.idea/istio-service-mesh.iml" />
     </modules>
   </component>
