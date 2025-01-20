@@ -1,10 +1,15 @@
 package com.airline.flightservice.model;
 
 
-import lombok.Data;
+import lombok.*;
+import org.hibernate.proxy.HibernateProxy;
 
 import javax.persistence.*;
+import java.util.Objects;
 
+@Getter
+@Setter
+@ToString
 @Data
 @Entity
 public class Flight {
@@ -38,5 +43,6 @@ public class Flight {
     public Flight(){
         flightCanceled = false;
     }
+
 
 }

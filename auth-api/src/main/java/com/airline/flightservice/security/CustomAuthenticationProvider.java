@@ -4,6 +4,7 @@ import com.airline.flightservice.model.Admin;
 import com.airline.flightservice.model.User;
 import com.airline.flightservice.repository.AdminRepository;
 import com.airline.flightservice.repository.UserRepository;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -16,13 +17,15 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class CustomAuthenticationProvider implements AuthenticationProvider{
 
+    @Setter
     private PasswordEncoder encoder;
-    private UserRepository userRepo;
-    private AdminRepository adminRepository;
+    private final UserRepository userRepo;
+    private final AdminRepository adminRepository;
 
     @Autowired
     public CustomAuthenticationProvider(UserRepository userRepo, AdminRepository adminRepository) {
@@ -44,18 +47,18 @@ public class CustomAuthenticationProvider implements AuthenticationProvider{
                 return new UsernamePasswordAuthenticationToken(email, password, role);
             }
         }
-        else if(userRepo.findByEmailIgnoreCase(email) != null)
-        {
-            User user = userRepo.findByEmailIgnoreCase(email);
+        else if(userRepo.findByEmailIgnoreCase(email).isPresent()) {
+            Optional<User> user = userRepo.findByEmailIgnoreCase(email);
 
-            if (encoder.matches(password, user.getPassword())) {
-                role.add(new SimpleGrantedAuthority("ROLE_USER"));
-                return new UsernamePasswordAuthenticationToken(email, password, role);
-            }
-        }else
-            throw new BadCredentialsException("Authentication failed");
+            if (user.isPresent()) {
+                if (encoder.matches(password, user.get().getPassword())) {
+                    role.add(new SimpleGrantedAuthority("ROLE_USER"));
+                    return new UsernamePasswordAuthenticationToken(email, password, role);
+                }
+            } else
+                throw new BadCredentialsException("Authentication failed");
 
-
+        }
         throw new BadCredentialsException("Authentication failed");
 
     }
@@ -65,7 +68,4 @@ public class CustomAuthenticationProvider implements AuthenticationProvider{
         return aClass.equals(UsernamePasswordAuthenticationToken.class);
     }
 
-    public void setEncoder(PasswordEncoder encoder) {
-        this.encoder = encoder;
-    }
 }

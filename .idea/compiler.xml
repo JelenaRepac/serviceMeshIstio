@@ -7,8 +7,8 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="product-api" />
         <module name="auth-api" />
+        <module name="product-api" />
         <module name="flight-api" />
       </profile>
     </annotationProcessing>

@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: airlines-app
+  labels:
+    app: airlines-app
+    service: airlines-app
+spec:
+  ports:
+    - port: 80         # Change port to 80
+      targetPort: 80    # Ensure it matches the container's exposed port
+      name: http
+  selector:
+    app: airlines-app
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: airlines-app-details
+  labels:
+    account: airlines-app
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airlines-app-v1
+  labels:
+    app: airlines-app
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airlines-app
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: airlines-app
+        version: v1
+    spec:
+      serviceAccountName: airlines-app-details
+      containers:
+        - name: airlines-app
+          image:  istio-frontend:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80  # Change to 80 to match NGINX port
+

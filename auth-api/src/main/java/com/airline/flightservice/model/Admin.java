@@ -1,14 +1,13 @@
 package com.airline.flightservice.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.proxy.HibernateProxy;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.Objects;
 
 @Data
 @Entity
@@ -24,4 +23,6 @@ public class Admin {
 
     @Column(nullable = false)
     private String password;
+
+
 }

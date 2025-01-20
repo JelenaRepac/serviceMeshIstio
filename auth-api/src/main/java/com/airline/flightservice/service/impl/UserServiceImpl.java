@@ -1,6 +1,8 @@
 package com.airline.flightservice.service.impl;
 
+import com.airline.flightservice.model.ApiResponse;
 import com.airline.flightservice.model.ConfirmationToken;
+import com.airline.flightservice.model.Country;
 import com.airline.flightservice.model.User;
 import com.airline.flightservice.repository.ConfirmationTokenRepository;
 import com.airline.flightservice.repository.UserRepository;
@@ -10,15 +12,22 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.mailjet.client.errors.MailjetException;
 import com.mailjet.client.errors.MailjetSocketTimeoutException;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import static  com.airline.flightservice.security.SecurityConstants.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -27,52 +36,61 @@ public class UserServiceImpl implements UserService {
     private final EmailSenderService emailSenderService;
     private final BCryptPasswordEncoder encoder ;
     private final ConfirmationTokenRepository confirmationTokenRepository;
+    private final RestTemplate restTemplate;
 
     public UserServiceImpl(UserRepository userRepository, EmailSenderService emailSenderService, BCryptPasswordEncoder encoder,
-                           ConfirmationTokenRepository confirmationTokenRepository) {
+                           ConfirmationTokenRepository confirmationTokenRepository, RestTemplate restTemplate) {
         this.userRepository = userRepository;
         this.emailSenderService = emailSenderService;
         this.encoder = encoder;
         this.confirmationTokenRepository = confirmationTokenRepository;
+        this.restTemplate = restTemplate;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public User save(User user) throws MailjetSocketTimeoutException, MailjetException {
 
-        User existingUser = userRepository.findByEmailIgnoreCase(user.getEmail());
+        Optional<User> existingUser = userRepository.findByEmailIgnoreCase(user.getEmail());
 
-        ConfirmationToken confirmationToken;
-        if (existingUser != null) {
-            throw new RuntimeException("User with that email already exists");
-        } else {
+            ConfirmationToken confirmationToken;
+            if (existingUser.isPresent()) {
+                throw new RuntimeException("User with that email already exists");
+            } else {
 
-            String encodedPassword = encoder.encode(user.getPassword());
-            user.setPassword(encodedPassword);
+                String encodedPassword = encoder.encode(user.getPassword());
+                user.setPassword(encodedPassword);
 
-            userRepository.save(user);
+                userRepository.save(user);
 
-            confirmationToken = new ConfirmationToken(user);
-            confirmationTokenRepository.save(confirmationToken);
-            emailSenderService.sendConfirmationEmail(user.getEmail(), confirmationToken.getConfirmationToken());
+                confirmationToken = new ConfirmationToken(user);
+                confirmationTokenRepository.save(confirmationToken);
+                emailSenderService.sendConfirmationEmail(user.getEmail(), confirmationToken.getConfirmationToken());
 
-        }
-        System.out.println("User created, left to confirm" + confirmationToken.getConfirmationToken());
-        return null;
+            }
+            System.out.println("User created, left to confirm" + confirmationToken.getConfirmationToken());
+            return null;
     }
 
     @Override
-    public User confirm(String confirmationToken) {
+    public ResponseEntity confirm(String confirmationToken) {
         ConfirmationToken token = confirmationTokenRepository.findByConfirmationToken(confirmationToken);
         if(token != null)
         {
-            User user = userRepository.findByEmailIgnoreCase(token.getAirlaneUser().getEmail());
-            if(token.getEmailToSet()==null)
-                user.setEnabled(true);
-            else
-                user.setEmail(token.getEmailToSet());
-            userRepository.save(user);
-            System.out.println("Email link confirmed");
+            Optional<User> user = userRepository.findByEmailIgnoreCase(token.getAirlaneUser().getEmail());
+            if(user.isPresent()) {
+                if (token.getEmailToSet() == null)
+                    user.get().setEnabled(true);
+                else
+                    user.get().setEmail(token.getEmailToSet());
+                userRepository.save(user.get());
+                System.out.println("Email link confirmed");
+            }
+
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "http://localhost:4200/confirm")
+                    .build();
+
         }
         else
         {
@@ -85,37 +103,41 @@ public class UserServiceImpl implements UserService {
     public User update(User user, String token) throws MailjetSocketTimeoutException, MailjetException {
         String email = JWT.require(Algorithm.HMAC512(SECRET.getBytes())).build()
                 .verify(token.replace(TOKEN_PREFIX, "")).getSubject();
-        User oldUser = userRepository.findByEmailIgnoreCase(email);
+        Optional<User> oldUser = userRepository.findByEmailIgnoreCase(email);
 
-        // Update user details
-        if (user.getFirstname() != null)
-            oldUser.setFirstname(user.getFirstname());
-        if (user.getLastname() != null)
-            oldUser.setLastname(user.getLastname());
-        if (user.getPassportNumber() != null)
-            oldUser.setPassportNumber(user.getPassportNumber());
-        if (user.getPassword() != null) {
-            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-            String encodedPassword = encoder.encode(user.getPassword());
-            oldUser.setPassword(encodedPassword);
+        if(oldUser.isPresent()) {
+
+
+            // Update user details
+            if (user.getFirstname() != null)
+                oldUser.get().setFirstname(user.getFirstname());
+            if (user.getLastname() != null)
+                oldUser.get().setLastname(user.getLastname());
+            if (user.getPassportNumber() != null)
+                oldUser.get().setPassportNumber(user.getPassportNumber());
+            if (user.getPassword() != null) {
+                BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+                String encodedPassword = encoder.encode(user.getPassword());
+                oldUser.get().setPassword(encodedPassword);
+            }
+
+            // If the email is updated, handle confirmation logic
+            if (user.getEmail() != null) {
+                // Save the user before creating confirmation token
+                oldUser.get().setEmail(user.getEmail());
+                userRepository.save(oldUser.get());  // Ensure the user is saved before creating a token
+
+                ConfirmationToken confirmationToken = new ConfirmationToken(oldUser.get());  // Create token with the updated user
+                confirmationToken.setEmailToSet(user.getEmail());
+                confirmationTokenRepository.save(confirmationToken);  // Save the confirmation token
+
+               // emailSenderService.sendConfirmationEmail(user.getEmail(), confirmationToken.getConfirmationToken());
+            }
+
+            // Save the updated user
+            userRepository.save(oldUser.get());
+
         }
-
-        // If the email is updated, handle confirmation logic
-        if (user.getEmail() != null) {
-            // Save the user before creating confirmation token
-            oldUser.setEmail(user.getEmail());
-            userRepository.save(oldUser);  // Ensure the user is saved before creating a token
-
-            ConfirmationToken confirmationToken = new ConfirmationToken(oldUser);  // Create token with the updated user
-            confirmationToken.setEmailToSet(user.getEmail());
-            confirmationTokenRepository.save(confirmationToken);  // Save the confirmation token
-
-            emailSenderService.sendConfirmationEmail(user.getEmail(), confirmationToken.getConfirmationToken());
-        }
-
-        // Save the updated user
-        userRepository.save(oldUser);
-
         return null; // You can return the updated user or some appropriate response
     }
     @Override
@@ -124,7 +146,37 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User findUserByEmail(String email) {
+
+        Optional<User> user = userRepository.findByEmailIgnoreCase(email);
+        if(user.isPresent()){
+            return user.get();
+        }
+        throw new RuntimeException("Ne postoji user sa tim email om!");
+    }
+
+    @Override
     public List<User> findAll() {
+
         return userRepository.findAll();
+    }
+
+    @Override
+    public List<Country> getCountry() {
+        String url = "http://flight:9090/flight/flight/country?accessKey=a0c2b52e19dd4518239d16ae667b4c22";
+
+        // Deserialize response directly into List<Country>
+        List<Country> countries = restTemplate.exchange(
+                url, HttpMethod.GET, null, new ParameterizedTypeReference<List<Country>>() {}
+        ).getBody();
+
+        if (countries != null) {
+            countries.forEach(country -> System.out.println(country.getCountryName()));
+        } else {
+            System.out.println("No data found in the response");
+        }
+
+        return countries != null ? countries : Collections.emptyList();
+
     }
 }

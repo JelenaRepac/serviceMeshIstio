@@ -1,0 +1,10 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: auth-mtls
+  namespace: default
+spec:
+  host: auth
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL

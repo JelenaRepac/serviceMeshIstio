@@ -5,10 +5,10 @@ FROM eclipse-temurin:17-jdk
 WORKDIR /app
 
 # Copy the JAR file into the container
-COPY ./target/orderservice-0.0.1-SNAPSHOT.jar order.jar
+COPY ./target/flight-api-0.0.1-SNAPSHOT.jar flight.jar
 
 # Expose port 9090 for the application
 EXPOSE 9090
 
 # Specify the command to run the application
-ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "order.jar"]
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "flight.jar"]

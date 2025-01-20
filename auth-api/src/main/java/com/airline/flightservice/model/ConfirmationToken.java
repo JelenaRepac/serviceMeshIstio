@@ -1,11 +1,12 @@
 package com.airline.flightservice.model;
 
 import com.auth0.jwt.JWT;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.proxy.HibernateProxy;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.Objects;
 
 import static com.airline.flightservice.security.SecurityConstants.SECRET;
 import static com.airline.flightservice.security.SecurityConstants.TOKEN_EXPIRATION_TIME;

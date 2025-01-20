@@ -1,5 +1,8 @@
 package com.airline.flightservice.model;
 
+import lombok.Getter;
+
+@Getter
 public class LoginForm {
 
     private String email;
@@ -13,16 +16,8 @@ public class LoginForm {
         this.password = password;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
     }
 
     public void setPassword(String password) {

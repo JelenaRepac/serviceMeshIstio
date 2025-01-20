@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: airlines-app
+spec:
+  hosts:
+    - '*'
+  gateways:
+    - shared-gateway
+  http:
+    - route:
+        - destination:
+            host: airlines-app
+            port:
+              number: 80

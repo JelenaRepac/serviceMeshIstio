@@ -17,6 +17,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static  com.airline.flightservice.security.SecurityConstants.*;
 @EnableWebSecurity
@@ -24,10 +26,10 @@ import static  com.airline.flightservice.security.SecurityConstants.*;
 @Configuration
 public class WebSecurity extends WebSecurityConfigurerAdapter {
 
-    private CustomAuthenticationProvider customAuthenticationProvider;
-    private BCryptPasswordEncoder encoder;
-    private UserRepository userRepo;
-    private AdminRepository adminRepository;
+    private final CustomAuthenticationProvider customAuthenticationProvider;
+    private final BCryptPasswordEncoder encoder;
+    private final UserRepository userRepo;
+    private final AdminRepository adminRepository;
 
     @Autowired
     public WebSecurity(CustomAuthenticationProvider customAuthenticationProvider, UserRepository userRepo,
@@ -56,9 +58,9 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200","http://localhost:8081"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE", "PUT", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowedHeaders(Collections.singletonList("*"));
         configuration.addExposedHeader("Authorization");
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

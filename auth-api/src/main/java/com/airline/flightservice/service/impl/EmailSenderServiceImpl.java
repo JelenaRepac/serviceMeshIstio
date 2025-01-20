@@ -17,11 +17,10 @@ public class EmailSenderServiceImpl implements EmailSenderService {
 
     //MAILJET
 
-    private final String apiKey = "2cc95c1ec4e397076d83befed980cbfd";
-    private final String secretKey = "b559bd598c331f7f56eab8cf0bcf8f77";
-
     @Override
     public void sendConfirmationEmail(String recipientEmail, String token) throws MailjetException, MailjetSocketTimeoutException {
+        String apiKey = "2cc95c1ec4e397076d83befed980cbfd";
+        String secretKey = "b559bd598c331f7f56eab8cf0bcf8f77";
         MailjetClient client = new MailjetClient(apiKey, secretKey, new ClientOptions("v3.1"));
 
         JSONObject message = new JSONObject();
@@ -33,7 +32,7 @@ public class EmailSenderServiceImpl implements EmailSenderService {
                         .put("Email", recipientEmail)
                         .put("Name", "User")));
         message.put(Emailv31.Message.SUBJECT, "Complete Registration!");
-        message.put(Emailv31.Message.HTMLPART, "To confirm your account, please click here: <a href='http://localhost:8080/confirm-account?token=" + token + "'>Confirm Account</a>");
+        message.put(Emailv31.Message.HTMLPART, "To confirm your account, please click here: <a href='http://localhost:8000/auth/confirm-account?token=" + token + "'>Confirm Account</a>");
         message.put(Emailv31.Message.CUSTOMID, "AppRegistration");
 
         JSONObject requestBody = new JSONObject();

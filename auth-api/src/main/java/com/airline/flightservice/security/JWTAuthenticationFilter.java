@@ -4,7 +4,6 @@ package com.airline.flightservice.security;
 import static com.auth0.jwt.algorithms.Algorithm.HMAC512;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 
 import javax.servlet.FilterChain;
@@ -24,7 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import static com.airline.flightservice.security.SecurityConstants.*;
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
     public JWTAuthenticationFilter(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
@@ -49,22 +48,24 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     @Override
     protected void successfulAuthentication(HttpServletRequest req, HttpServletResponse res, FilterChain chain,
-                                            Authentication auth) {
+                                            Authentication auth) throws IOException {
 
         String email = auth.getName();
-        String roles="";
+        StringBuilder roles= new StringBuilder();
         for(GrantedAuthority g: (auth.getAuthorities()))
         {
-            roles+=g.getAuthority();
+            roles.append(g.getAuthority());
         }
         System.out.println("Uspesan login, vas role: "+roles);
 
         String token = JWT.create().withSubject(email)
-                .withClaim("roles", roles)
+                .withClaim("roles", roles.toString())
                 .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION_TIME))
                 .sign(HMAC512(SECRET.getBytes()));
 
-        res.addHeader(HEADER_STRING, TOKEN_PREFIX + token);
+        res.setContentType("application/json");
+        res.setStatus(HttpServletResponse.SC_OK);
+        res.getWriter().write("{\"token\":\"" + token + "\"}");
     }
 
     private LoginForm getCredentials(HttpServletRequest request) {
