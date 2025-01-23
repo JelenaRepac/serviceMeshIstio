@@ -1,9 +1,9 @@
 package com.airline.flightservice.controller;
 
+import com.airline.flightservice.dto.City;
 import com.airline.flightservice.dto.Country;
 import com.airline.flightservice.model.Flight;
 import com.airline.flightservice.service.impl.FlightServiceImpl;
-import com.airline.flightservice.model.Order;
 import com.airline.flightservice.model.Product;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,18 +34,19 @@ public class FlightController {
     public ResponseEntity<?> saveFlight(@RequestBody Flight flight){ return new ResponseEntity<>(flightService.save(flight), HttpStatus.CREATED); }
 
 
-    @PostMapping
-    public List<Product> createOrder(@RequestBody Order order) {
-        return flightService.createOrder(order);
-    }
-
-    @GetMapping("/{orderId}")
-    public Order getOrder(@PathVariable Long orderId) {
-        return flightService.getOrder(orderId);
-    }
-
-    @GetMapping("/flight/country")
+    @GetMapping("/countries")
     public List<Country> getCountries(@RequestParam String accessKey) {
         return flightService.getCountries(accessKey);
     }
+
+
+    @GetMapping("/airports")
+    public List<Country> getAirports(@RequestParam String accessKey) {
+        return flightService.getCountries(accessKey);
+    }
+    @GetMapping("/cities")
+    public List<City> getCities(@RequestParam String accessKey) {
+        return flightService.getCities(accessKey);
+    }
+
 }

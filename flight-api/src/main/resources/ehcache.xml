@@ -1,0 +1,5 @@
+<ehcache>
+    <cache name="flightDataCache"
+           maxEntriesLocalHeap="1000"
+           timeToLiveSeconds="60"/>
+</ehcache>

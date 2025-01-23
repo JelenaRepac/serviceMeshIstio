@@ -1,18 +1,22 @@
 package com.airline.flightservice.service.impl;
 
+import com.airline.flightservice.dto.City;
 import com.airline.flightservice.dto.Country;
-import com.airline.flightservice.model.ApiResponse;
-import com.airline.flightservice.model.Flight;
-import com.airline.flightservice.model.Order;
-import com.airline.flightservice.model.Product;
+import com.airline.flightservice.model.*;
 import com.airline.flightservice.repository.FlightRepository;
 import com.airline.flightservice.service.FlightService;
 
+import org.hibernate.annotations.Cache;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,24 +34,6 @@ public class FlightServiceImpl implements FlightService {
         this.flightRepository = flightRepository;
     }
 
-    public List<Product> createOrder(Order order) {
-        List<Long> productIds = order.getProductIds();
-        List<Product> productList = new ArrayList<>();
-        productIds.forEach(productId -> {
-            String productUrl = productServiceUrl + productId;
-            Product product = restTemplate.getForObject(productUrl, Product.class);
-            productList.add(product);
-
-
-            System.out.println("Fetched Product: " + product);
-        });
-
-        return productList;
-    }
-
-    public Order getOrder(Long orderId) {
-        return new Order(orderId, "John Doe", List.of(1L, 2L)); // Example
-    }
 
     @Override
     public Flight save(Flight flight) {
@@ -55,22 +41,89 @@ public class FlightServiceImpl implements FlightService {
         return flightRepository.save(flight);
     }
 
-
+    @Override
     public List<Country> getCountries(String accessKey) {
         // Pozivanje eksternog API-ja
-        String url = externalApiUrl + "?access_key=" + accessKey;
-        ApiResponse apiResponse = restTemplate.getForObject(url, ApiResponse.class);
+        String url = externalApiUrl + "/countries?access_key=" + accessKey;
 
-        System.out.println(apiResponse.getData().get(0));
-        // Filtriranje samo potrebnih podataka
-        return apiResponse.getData().stream()
-                .map(country -> {
-                    Country response = new Country();
-                    response.setCountryName(country.getCountryName());
-                    response.setCountryId(country.getCountryId());
-                    return response;
-                })
-                .collect(Collectors.toList());
+        // Uporaba generičkog ApiResponse sa specifičnim tipom Country
+        ParameterizedTypeReference<ApiResponse<Country>> responseType = new ParameterizedTypeReference<>() {};
+        ResponseEntity<ApiResponse<Country>> responseEntity = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                null,
+                responseType
+        );
+
+        ApiResponse<Country> apiResponse = responseEntity.getBody();
+        if (apiResponse != null && apiResponse.getData() != null) {
+            System.out.println(apiResponse.getData().get(0));
+
+            // Filtriranje samo potrebnih podataka
+            return apiResponse.getData().stream()
+                    .map(country -> {
+                        Country response = new Country();
+                        response.setCountryName(country.getCountryName());
+                        response.setCountryId(country.getCountryId());
+                        return response;
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        return Collections.emptyList();
     }
 
+    @Override
+    @Cacheable(value = "flightDataCache")
+    public List<City> getCities(String accessKey) {
+        // Pozivanje eksternog API-ja
+        String url = externalApiUrl + "/cities?access_key=" + accessKey;
+
+        ParameterizedTypeReference<ApiResponse<City>> responseType = new ParameterizedTypeReference<>() {};
+        ResponseEntity<ApiResponse<City>> responseEntity = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                null,
+                responseType
+        );
+
+        ApiResponse<City> apiResponse = responseEntity.getBody();
+
+        if (apiResponse != null && apiResponse.getData() != null) {
+            System.out.println(apiResponse.getData().get(0));
+
+            // Filtriranje samo potrebnih podataka
+            return apiResponse.getData().stream()
+                    .map(city -> {
+                        City response = new City();
+                        response.setId(city.getId());
+                        response.setName(city.getName());
+                        response.setIataCode(city.getIataCode());
+                        return response;
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        return Collections.emptyList();
+    }
+
+
+    @Override
+    public List<Airport> getAirports(String accessKey) {
+        // Pozivanje eksternog API-ja
+        String url = externalApiUrl + "/cities/?access_key=" + accessKey;
+        ApiResponse apiResponse = restTemplate.getForObject(url, ApiResponse.class);
+
+//        System.out.println(apiResponse.getData().get(0));
+//        // Filtriranje samo potrebnih podataka
+//        return apiResponse.getData().stream()
+//                .map(country -> {
+//                    Country response = new Country();
+//                    response.setCountryName(country.getCountryName());
+//                    response.setCountryId(country.getCountryId());
+//                    return response;
+//                })
+//                .collect(Collectors.toList());
+        return null;
+    }
 }

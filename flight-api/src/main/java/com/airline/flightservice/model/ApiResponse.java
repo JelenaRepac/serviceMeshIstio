@@ -12,9 +12,9 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApiResponse {
+public class ApiResponse<T> {
 
     private Pagination pagination;
-    private List<Country> data;
+    private List<T> data;
 
 }
