@@ -15,4 +15,7 @@ public class Country {
     private String countryName;
     @JsonProperty("country_id")
     private String countryId;
+
+    @JsonProperty("country_iso2")
+    private String iso2;
 }

@@ -17,5 +17,6 @@ public class City  {
     private String name;
     @JsonProperty("iata_code")
     private String iataCode;
-
+    @JsonProperty("country_iso2")
+    private String iso2;
 }

@@ -1,6 +1,5 @@
-package com.airline.flightservice.model;
+package com.airline.flightservice.model.tr;
 
-import com.airline.flightservice.dto.Country;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

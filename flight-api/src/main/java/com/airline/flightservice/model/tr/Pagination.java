@@ -1,4 +1,4 @@
-package com.airline.flightservice.model;
+package com.airline.flightservice.model.tr;
 
 public class Pagination {
 
