@@ -1,23 +1,28 @@
 version: '3.8'
 
+
 services:
   flight-api:
     build:
       context: ../flight-api
       dockerfile: Dockerfile
-    container_name: flight
-    ports:
-      - "9090:9090"
+    # remove container_name so Compose can auto-name multiple instances
+    # container_name: flight
+    expose:
+      - "9090"
     volumes:
       - ../flight-api/target:/app/target
     networks:
       - istio
+    # if you deploy this as a Docker Swarm stack, this will give you 2 replicas:
+    deploy:
+      replicas: 2
 
   auth-api:
     build:
       context: ../auth-api
       dockerfile: Dockerfile
-    container_name: auth
+    # container_name: auth
     ports:
       - "8000:8000"
     volumes:

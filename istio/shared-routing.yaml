@@ -1,33 +1,27 @@
-apiVersion: networking.istio.io/v1alpha3
+apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
   name: shared-routing
 spec:
   hosts:
-    - "*"
+    - "*"                    # accept all hostnames
   gateways:
-    - shared-gateway
+    - shared-gateway         # your Istio Gateway
   http:
-    # Route for /login to auth service
+    # 1) Static assets (JS/CSS/images/fonts/etc.)
+    - match:
+        - uri:
+            regex: "^/.*\\.(css|js|ico|png|svg|woff2?)$"
+      route:
+        - destination:
+            host: airlines-app
+            port:
+              number: 80
+
+    # 2) Authentication endpoints
     - match:
         - uri:
             prefix: /login
-      route:
-        - destination:
-            host: auth
-            port:
-              number: 8000
-    - match:
-        - uri:
-            exact: /auth/country
-      route:
-        - destination:
-            host: auth
-            port:
-              number: 8000
-
-    # Route for /auth/profile to auth service
-    - match:
         - uri:
             prefix: /auth
       route:
@@ -36,63 +30,7 @@ spec:
             port:
               number: 8000
 
-    # Route for /sign-up to airlines-app service
-    - match:
-        - uri:
-            prefix: /sign-up
-      route:
-        - destination:
-            host: airlines-app
-            port:
-              number: 80
-
-    # Routes for other static resources to airlines-app service
-    - match:
-        - uri:
-            prefix: /polyfills-FFHMD2TL.js
-      route:
-        - destination:
-            host: airlines-app
-            port:
-              number: 80
-
-    - match:
-        - uri:
-            prefix: /main-2UZL65YY.js
-      route:
-        - destination:
-            host: airlines-app
-            port:
-              number: 80
-
-    - match:
-        - uri:
-            prefix: /styles-CXCWI5IP.css
-      route:
-        - destination:
-            host: airlines-app
-            port:
-              number: 80
-
-    - match:
-        - uri:
-            prefix: /favicon.ico
-      route:
-        - destination:
-            host: airlines-app
-            port:
-              number: 80
-
-    - match:
-        - uri:
-            prefix: /home
-      route:
-        - destination:
-            host: airlines-app
-            port:
-              number: 80
-
-    # Route for /flight to flight service
+    # 3) Flight service endpoints
     - match:
         - uri:
             prefix: /flight
@@ -102,15 +40,27 @@ spec:
             port:
               number: 9090
 
-# Fault injection example (uncomment to use):
+    # 4) Frontend application routes (e.g. /airline or Angular client paths)
+    - match:
+        - uri:
+            prefix: /airline
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: airlines-app
+            port:
+              number: 80
+
+# Uncomment and customize any of these for fault-injection, retries, timeouts, etc.
 #    fault:
 #      delay:
 #        percentage:
-#          value: 10 # 10% requests delayed
+#          value: 10
 #        fixedDelay: 5s
 #      abort:
 #        percentage:
-#          value: 10 # 10% requests aborted
+#          value: 10
 #        httpStatus: 500
 #    retries:
 #      attempts: 3

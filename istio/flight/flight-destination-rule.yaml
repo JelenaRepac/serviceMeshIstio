@@ -1,0 +1,28 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: flight-circuit-breaker
+  namespace: default
+spec:
+  host: flight
+  trafficPolicy:
+    connectionPool:
+      http:
+        # Maximum number of HTTP/1 requests Envoy will enqueue on a connection
+        # before applying back-pressure to avoid unbounded buffering under load.
+        http1MaxPendingRequests: 100
+        # After serving this many requests on a single TCP connection,
+        # Envoy will close and reopen it to prevent long-lived connections
+        # from accumulating stale state or resource leaks.
+        maxRequestsPerConnection: 10
+    outlierDetection:
+      # Number of consecutive request failures (5xx, timeouts, etc.) on a host
+      # before Envoy ejects it from the load-balancing pool.
+      consecutiveErrors: 5
+      # How often (every 10 seconds) Envoy assesses host health for ejection.
+      interval: 10s
+      # How long a host stays ejected before being eligible for re-inclusion.
+      baseEjectionTime: 30s
+      # Caps the fraction of hosts that can be ejected at once (50%),
+      # ensuring you never lose more than half your capacity.
+      maxEjectionPercent: 50
