@@ -8,8 +8,10 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="auth-api" />
-        <module name="product-api" />
         <module name="flight-api" />
+        <module name="notification-api" />
+        <module name="reservation-api" />
+        <module name="chat-api" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -20,9 +22,11 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="auth-api" options="-parameters" />
+      <module name="chat-api" options="-parameters" />
       <module name="eureka" options="-parameters" />
       <module name="flight-api" options="-parameters" />
-      <module name="product-api" options="-parameters" />
+      <module name="notification-api" options="-parameters" />
+      <module name="reservation-api" options="-parameters" />
       <module name="zuul" options="-parameters" />
     </option>
   </component>

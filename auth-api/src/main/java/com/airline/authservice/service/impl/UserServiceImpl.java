@@ -1,15 +1,24 @@
 package com.airline.authservice.service.impl;
 
+import com.airline.authservice.common.ConvertToJson;
+import com.airline.authservice.common.LocaleLanguage;
+import com.airline.authservice.common.MailType;
+import com.airline.authservice.security.TwoFactorAuthentication;
+import com.airline.authservice.dto.TokenAuthorizationDto;
+import com.airline.authservice.dto.TokenDto;
+import com.airline.authservice.exception.BadRequestCustomException;
+import com.airline.authservice.exception.ForbiddenExceptionCustom;
 import com.airline.authservice.model.*;
 import com.airline.authservice.repository.AdminRepository;
 import com.airline.authservice.repository.ConfirmationTokenRepository;
 import com.airline.authservice.repository.UserRepository;
-import com.airline.authservice.service.EmailSenderService;
+import com.airline.authservice.service.RemoteEmailSenderService;
 import com.airline.authservice.service.UserService;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.mailjet.client.errors.MailjetException;
-import com.mailjet.client.errors.MailjetSocketTimeoutException;
+import com.google.zxing.WriterException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -20,65 +29,179 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import static  com.airline.authservice.security.SecurityConstants.*;
+import static com.airline.authservice.security.SecurityConstants.*;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final EmailSenderService emailSenderService;
-    private final BCryptPasswordEncoder encoder ;
+    private final BCryptPasswordEncoder encoder;
     private final ConfirmationTokenRepository confirmationTokenRepository;
     private final RestTemplate restTemplate;
     private final AdminRepository adminRepository;
+    private final TokenGenerationService tokenGenerationService;
+    private final MessageSource messageSource;
 
-    public UserServiceImpl(UserRepository userRepository, EmailSenderService emailSenderService, BCryptPasswordEncoder encoder,
+    private final RemoteEmailSenderService remoteEmailSenderService;
+    private final LocaleLanguage localeLanguage;
+    private final TwoFactorAuthentication twoFactorAuthentication;
+
+
+    public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder encoder,
                            ConfirmationTokenRepository confirmationTokenRepository, RestTemplate restTemplate,
-                           AdminRepository adminRepository) {
+                           AdminRepository adminRepository, TokenGenerationService tokenGenerationService, MessageSource messageSource, RemoteEmailSenderService remoteEmailSenderService, LocaleLanguage localeLanguage, TwoFactorAuthentication twoFactorAuthentication) {
         this.userRepository = userRepository;
-        this.emailSenderService = emailSenderService;
         this.encoder = encoder;
         this.confirmationTokenRepository = confirmationTokenRepository;
         this.restTemplate = restTemplate;
         this.adminRepository = adminRepository;
+        this.tokenGenerationService = tokenGenerationService;
+        this.messageSource = messageSource;
+        this.remoteEmailSenderService = remoteEmailSenderService;
+        this.localeLanguage = localeLanguage;
+        this.twoFactorAuthentication = twoFactorAuthentication;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public User save(User user) throws MailjetSocketTimeoutException, MailjetException {
+    public TokenAuthorizationDto save(User user) throws IOException, WriterException {
+        log.info("REGISTER USER");
+        log.info("User {}", ConvertToJson.convertObjectToJsonString(user));
 
-        Optional<User> existingUser = userRepository.findByEmailIgnoreCase(user.getEmail());
+        Optional<User> userByEmail = userRepository.findByEmailIgnoreCase(user.getEmail());
+        if (userByEmail.isPresent()) {
+            throw new RuntimeException("User with this email already exists");
+        }
 
-            ConfirmationToken confirmationToken;
-            if (existingUser.isPresent()) {
-                throw new RuntimeException("User with that email already exists");
-            } else {
+        Optional<User> userByUsername = userRepository.findByUsername(user.getUsername());
+        if (userByUsername.isPresent()) {
+            throw new RuntimeException("User with this username already exists");
+        }
 
-                String encodedPassword = encoder.encode(user.getPassword());
-                user.setPassword(encodedPassword);
+        ConfirmationToken confirmationToken;
 
-                userRepository.save(user);
 
-                confirmationToken = new ConfirmationToken(user);
-                confirmationTokenRepository.save(confirmationToken);
-                emailSenderService.sendConfirmationEmail(user.getEmail(), confirmationToken.getConfirmationToken());
+        String encodedPassword = encoder.encode(user.getPassword());
+        user.setPassword(encodedPassword);
 
-            }
-            System.out.println("User created, left to confirm" + confirmationToken.getConfirmationToken());
-            return null;
+        String secretKey = TwoFactorAuthentication.generateSecretKey();
+        user.setSecretKey(secretKey);
+        user.setTwoFactorEnabled(true);
+
+        userRepository.save(user);
+
+        confirmationToken = new ConfirmationToken(user);
+        confirmationTokenRepository.save(confirmationToken);
+
+        String email = user.getEmail();
+        String issuer = "YourAppName";
+        String barCodeUrl = TwoFactorAuthentication.getGoogleAuthenticatorBarCode(secretKey, email, issuer);
+        TwoFactorAuthentication.createQRCode(barCodeUrl, "./totp-" + user.getId() + ".png", 200, 200); // or return as base64 if needed
+
+
+        String qrCodeBase64 = TwoFactorAuthentication.getQRCodeBase64(barCodeUrl, 200, 200);
+
+        log.info("User created, waiting for confirmation token: {}", confirmationToken.getConfirmationToken());
+
+        return TokenAuthorizationDto.builder()
+                .accessToken(confirmationToken.getConfirmationToken())
+                .refreshToken(confirmationToken.getRefreshToken())
+                .qrCodeBase64(qrCodeBase64)
+                .build();
+    }
+
+    @Override
+    public void verifyTotpCode(String email, String code, String authHeader) {
+        User user = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!user.isTwoFactorEnabled()) {
+            throw new BadRequestCustomException("2FA is not enabled for this user.", "400");
+        }
+
+        String expectedCode = TwoFactorAuthentication.getTOTPCode(user.getSecretKey());
+        System.out.println(expectedCode);
+        Boolean value = expectedCode.equals(code);
+        if (value) {
+            user.setEnabled(true);
+            userRepository.save(user);
+            //slanje mejla za potvrdu naloga
+            remoteEmailSenderService.sendConfirmationEmail(user.getEmail(), authHeader, MailType.ACCOUNT_CONFIRMATION);
+        } else {
+            throw new BadRequestCustomException("Invalid TOTP code.", "400");
+        }
+    }
+
+    @Transactional
+    @Override
+    public TokenDto checkAndGenerateTokens(TokenAuthorizationDto tokenAuthorizationDto, String uid) {
+        log.info("[{}] Check and generate token", uid);
+        log.info("[{}] REQUEST { tokenAuthorizationDto: {} }", uid, ConvertToJson.convertObjectToJsonString(tokenAuthorizationDto));
+        // validacija refresh tokena
+        checkTokensValidity(tokenAuthorizationDto.getRefreshToken());
+
+        // na osnovu refresh tokena - kreiranje novog access/refresh tokena
+        log.info("[{}] Username extraction started.", uid);
+        String username = tokenGenerationService.getUsernameFromToken(tokenAuthorizationDto.getRefreshToken().substring(7));
+        log.info("[{}] Username extracted successfully. username: {}", uid, username);
+
+        //get iz db
+
+        ConfirmationToken confirmationToken = confirmationTokenRepository.findByRefreshToken(tokenAuthorizationDto.getRefreshToken());
+        String accessToken;
+        String refreshToken;
+
+        if (confirmationToken != null) {
+            accessToken = tokenGenerationService.generateAccessToken(username);
+            refreshToken = tokenGenerationService.generateRefreshToken(username);
+
+            ZonedDateTime zonedDateTime = ZonedDateTime.now();
+            Date date = Date.from(zonedDateTime.toInstant());
+
+            confirmationToken.setConfirmationToken(accessToken);
+            confirmationToken.setRefreshToken(refreshToken);
+            confirmationToken.setCreatedDate(date);
+
+        } else {
+            log.error("[{}] ERROR {}", uid, messageSource.getMessage("error.message.user_not_exist", null, localeLanguage.getLocale()));
+            throw new ForbiddenExceptionCustom(messageSource.getMessage("error.message.user_not_exist", null, localeLanguage.getLocale()),
+                    messageSource.getMessage("error.code.user_not_exist", null, localeLanguage.getLocale()));
+        }
+
+        confirmationTokenRepository.save(confirmationToken);
+
+        log.info("[{}] Tokens creation successfully done for user: {} ", uid, username);
+        return TokenDto.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+
+
+    }
+
+    public void checkTokensValidity(String refreshToken) {
+        boolean refreshTokenValidity = tokenGenerationService.validateToken(refreshToken.substring(7));
+        if (!refreshTokenValidity) {
+            throw new ForbiddenExceptionCustom(messageSource.getMessage("error.message.forbidden", null, localeLanguage.getLocale()),
+                    messageSource.getMessage("error.code.forbidden", null, localeLanguage.getLocale()));
+        }
     }
 
     @Override
     public ResponseEntity confirm(String confirmationToken) {
         ConfirmationToken token = confirmationTokenRepository.findByConfirmationToken(confirmationToken);
-        if(token != null)
-        {
+        if (token != null) {
             Optional<User> user = userRepository.findByEmailIgnoreCase(token.getAirlaneUser().getEmail());
-            if(user.isPresent()) {
+            if (user.isPresent()) {
                 if (token.getEmailToSet() == null)
                     user.get().setEnabled(true);
                 else
@@ -91,21 +214,24 @@ public class UserServiceImpl implements UserService {
                     .header(HttpHeaders.LOCATION, "http://localhost:4200/confirm")
                     .build();
 
-        }
-        else
-        {
+        } else {
             System.out.println("Link is invalid or broken");
         }
         return null;
     }
 
-@Override
-    public User update(User user, String token) throws MailjetSocketTimeoutException, MailjetException {
-        String email = JWT.require(Algorithm.HMAC512(SECRET.getBytes())).build()
-                .verify(token.replace(TOKEN_PREFIX, "")).getSubject();
-        Optional<User> oldUser = userRepository.findByEmailIgnoreCase(email);
+    @Override
+    public User update(User user, String token) {
+        String email = Jwts.parser()
+                .setSigningKey(Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8)))
+                .build()
+                .parseClaimsJws(token.replace(TOKEN_PREFIX, ""))
+                .getBody()
+                .getSubject();
 
-        if(oldUser.isPresent()) {
+        Optional<User> oldUser = userRepository.findByEmailIgnoreCase(email);
+        User updatedUser = null;
+        if (oldUser.isPresent()) {
 
 
             // Update user details
@@ -139,25 +265,30 @@ public class UserServiceImpl implements UserService {
                 confirmationToken.setEmailToSet(user.getEmail());
                 confirmationTokenRepository.save(confirmationToken);  // Save the confirmation token
 
-               // emailSenderService.sendConfirmationEmail(user.getEmail(), confirmationToken.getConfirmationToken());
+                // emailSenderService.sendConfirmationEmail(user.getEmail(), confirmationToken.getConfirmationToken());
             }
 
             // Save the updated user
-            userRepository.save(oldUser.get());
+            updatedUser = userRepository.save(oldUser.get());
 
         }
-        return null; // You can return the updated user or some appropriate response
+        return updatedUser; // You can return the updated user or some appropriate response
     }
+
     @Override
-    public Optional<User> findUserById(Long id) {
-        return Optional.empty();
+    public User findUserById(Long id) {
+        log.info("GET user by id {}", id);
+
+        User user = userRepository.findById(id).get();
+        log.info("Successfully returned user by id");
+        return user;
     }
 
     @Override
     public User findUserByEmail(String email) {
 
         Optional<User> user = userRepository.findByEmailIgnoreCase(email);
-        if(user.isPresent()){
+        if (user.isPresent()) {
             return user.get();
         }
         throw new RuntimeException("Ne postoji user sa tim email om!");
@@ -175,7 +306,8 @@ public class UserServiceImpl implements UserService {
 
         // Deserialize response directly into List<Country>
         List<Country> countries = restTemplate.exchange(
-                url, HttpMethod.GET, null, new ParameterizedTypeReference<List<Country>>() {}
+                url, HttpMethod.GET, null, new ParameterizedTypeReference<List<Country>>() {
+                }
         ).getBody();
 
         if (countries != null) {

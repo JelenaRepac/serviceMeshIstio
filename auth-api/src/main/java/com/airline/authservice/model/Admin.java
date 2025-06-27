@@ -2,8 +2,7 @@ package com.airline.authservice.model;
 
 import lombok.*;
 
-import javax.persistence.*;
-
+import jakarta.persistence.*;
 @Data
 @Entity
 @Builder

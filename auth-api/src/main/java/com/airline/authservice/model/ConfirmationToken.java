@@ -1,20 +1,24 @@
 package com.airline.authservice.model;
 
-import com.auth0.jwt.JWT;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import lombok.*;
 
-import javax.persistence.*;
+import javax.crypto.SecretKey;
+import jakarta.persistence.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
-import static com.airline.authservice.security.SecurityConstants.SECRET;
-import static com.airline.authservice.security.SecurityConstants.TOKEN_EXPIRATION_TIME;
-import static com.auth0.jwt.algorithms.Algorithm.HMAC512;
+import static com.airline.authservice.security.SecurityConstants.*;
 
 @Data
 @Entity
 @NoArgsConstructor
 @Table(name = "confirmation_token", schema = "airline_users")
 public class ConfirmationToken {
+
+    private static final String BEARER_TOKEN_TYPE = "Bearer ";
 
 
     @Id
@@ -23,6 +27,9 @@ public class ConfirmationToken {
 
 
     private String confirmationToken;
+
+    private String refreshToken;
+
 
     private String emailToSet;
 
@@ -37,10 +44,20 @@ public class ConfirmationToken {
         this.airlaneUser = user;
         createdDate = new Date();
 
-        confirmationToken = JWT.create()
-                .withSubject(user.getEmail())
-                .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION_TIME))
-                .sign(HMAC512(SECRET.getBytes()));
+        SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+
+        // Create JWT token
+         this.confirmationToken = BEARER_TOKEN_TYPE + Jwts.builder()
+                .setSubject(user.getEmail())
+                .setExpiration(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION_TIME))
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();
+
+        this.refreshToken =BEARER_TOKEN_TYPE + Jwts.builder()
+                .setSubject(user.getEmail())
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION_TIME))
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();
     }
 
 

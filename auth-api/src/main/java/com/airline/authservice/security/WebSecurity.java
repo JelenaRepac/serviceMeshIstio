@@ -2,16 +2,16 @@ package com.airline.authservice.security;
 
 import com.airline.authservice.repository.AdminRepository;
 import com.airline.authservice.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -19,48 +19,65 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static  com.airline.authservice.security.SecurityConstants.*;
-@EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+import static com.airline.authservice.security.SecurityConstants.*;
+
 @Configuration
-public class WebSecurity extends WebSecurityConfigurerAdapter {
+@EnableMethodSecurity(prePostEnabled = true)
+public class WebSecurity {
 
     private final CustomAuthenticationProvider customAuthenticationProvider;
     private final BCryptPasswordEncoder encoder;
     private final UserRepository userRepo;
     private final AdminRepository adminRepository;
 
-    @Autowired
-    public WebSecurity(CustomAuthenticationProvider customAuthenticationProvider, UserRepository userRepo,
-                       BCryptPasswordEncoder encoder,AdminRepository adminRepository) {
-        super();
+    public WebSecurity(CustomAuthenticationProvider customAuthenticationProvider,
+                       UserRepository userRepo,
+                       BCryptPasswordEncoder encoder,
+                       AdminRepository adminRepository) {
         this.customAuthenticationProvider = customAuthenticationProvider;
         this.userRepo = userRepo;
         this.encoder = encoder;
         this.adminRepository = adminRepository;
     }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        customAuthenticationProvider.setEncoder(encoder);
 
-        http.cors().and().csrf().disable().
-                authorizeRequests().
-                antMatchers(LOGIN_PATH, REGISTRATION_PATH, CONFIRMATION_PATH).permitAll()
-                .anyRequest().authenticated()
-                .and()
-                .addFilter(new JWTAuthenticationFilter(authenticationManager()))
-                .addFilter(new JWTAuthorizationFilter(authenticationManager(), userRepo, adminRepository))
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        JWTAuthenticationFilter jwtAuthenticationFilter = new JWTAuthenticationFilter(authenticationManager());
+        JWTAuthorizationFilter jwtAuthorizationFilter = new JWTAuthorizationFilter(authenticationManager(), userRepo, adminRepository);
+
+        http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(authz -> authz
+                        .requestMatchers(LOGIN_PATH,
+                                REGISTRATION_PATH,
+                                CONFIRMATION_PATH, "/chat/message").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .addFilter(jwtAuthenticationFilter)
+                .addFilterAfter(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        // You can register multiple providers here if needed
+        return new ProviderManager(customAuthenticationProvider);
     }
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList
-                ("http://localhost:4200",
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:4200",
                 "http://localhost:8081",
-                "http://localhost:8080/"));
+                "http://localhost:8080",
+                "http://localhost:9000"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE", "PUT", "PATCH"));
         configuration.setAllowedHeaders(Collections.singletonList("*"));
         configuration.addExposedHeader("Authorization");
@@ -68,12 +85,4 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
-    @Override
-    public void configure(AuthenticationManagerBuilder auth) throws Exception {
-
-        customAuthenticationProvider.setEncoder(encoder);
-        auth.authenticationProvider(customAuthenticationProvider);
-    }
-
 }

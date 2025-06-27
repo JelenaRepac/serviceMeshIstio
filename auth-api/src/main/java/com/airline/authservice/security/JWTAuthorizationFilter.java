@@ -2,20 +2,22 @@ package com.airline.authservice.security;
 
 import com.airline.authservice.repository.AdminRepository;
 import com.airline.authservice.repository.UserRepository;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.DecodedJWT;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import static  com.airline.authservice.security.SecurityConstants.*;
@@ -50,43 +52,55 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
         }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        chain.doFilter(req, res);
+
+        try {
+            chain.doFilter(req, res);
+        } catch (Exception e) {
+            e.printStackTrace(); // Or log it properly
+            res.setStatus(HttpServletResponse.SC_FORBIDDEN); // Optional: override status for debugging
+            res.getWriter().write("Access denied: " + e.getMessage());
+        }
+
     }
 
     private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request, String token) {
-
-        if (token != null) {
-            // parsiranje tokena
-            DecodedJWT jwt = JWT.require(Algorithm.HMAC512(SECRET.getBytes())).build()
-                    .verify(token.replace(TOKEN_PREFIX, ""));
-
-            // subject je email od korisnika i spakovan je u JWT
-            String email = jwt.getSubject();
-
-            // Provera da li se nalazi user u bazi
-            if (email != null) {
-                List<SimpleGrantedAuthority> role = new ArrayList<>();
-                if(adminRepository.existsByUsername(email))
-                {
-                    role.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-                    return new UsernamePasswordAuthenticationToken(email, null, role);
-                }
-
-                if (userRepo.existsByEmail(email))
-                {
-                    role.add(new SimpleGrantedAuthority("ROLE_USER"));
-                    return new UsernamePasswordAuthenticationToken(email, null, role);
-                }
-                else{
-                    role.add(new SimpleGrantedAuthority("ROLE_USER"));
-                    return new UsernamePasswordAuthenticationToken(email, null, role);
-                }
-
-
-            }
+        if (token == null || !token.startsWith(TOKEN_PREFIX)) {
             return null;
         }
-        return null;
+
+
+        try {
+            // Parsiranje i validacija JWT tokena
+            Claims claims = Jwts.parser()
+                    .verifyWith(Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8)))
+                    .build()
+                    .parseSignedClaims(token.replace(TOKEN_PREFIX, ""))
+                    .getPayload();
+
+
+            String email = claims.getSubject();
+
+            if (email == null) {
+                return null;
+            }
+
+            List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+
+            if (adminRepository.existsByUsername(email)) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            } else if (userRepo.existsByEmail(email)) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+            } else {
+                // Ako korisnik nije pronađen ni kao admin ni kao user
+                return null;
+            }
+
+            return new UsernamePasswordAuthenticationToken(email, null, authorities);
+        } catch (JwtException | IllegalArgumentException e) {
+            // Token nije validan ili je istekao
+            return null;
+        }
     }
+
 
 }

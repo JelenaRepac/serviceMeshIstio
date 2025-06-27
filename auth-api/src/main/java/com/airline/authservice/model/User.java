@@ -1,8 +1,8 @@
 package com.airline.authservice.model;
 
+import jakarta.persistence.*;
 import lombok.*;
 
-import javax.persistence.*;
 import java.util.Date;
 
 @Entity
@@ -36,17 +36,22 @@ public class User {
     @Column(nullable = false)
     private String passportNumber;
 
-    @Column(nullable = false)
+    @Column
     private String country;
 
-    @Column(nullable = false)
+    @Column
     private Date birthday;
 
-    @Column(nullable = false)
+    @Column
     private String phoneNumber;
 
     @Column
     private String rank;
+
+    @Column
+    private boolean isTwoFactorEnabled;
+    @Column
+    private String secretKey;
 
     @Column
     private int miles;
