@@ -1,6 +1,7 @@
 package com.airline.notificationservice.kafka;
 
 import com.airline.notificationservice.kafka.event.EmailEvent;
+import com.airline.notificationservice.kafka.event.NewFlightScheduleEvent;
 import com.airline.notificationservice.kafka.event.UpcomingFlightNotificationEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -67,6 +68,34 @@ public class KafkaConfig {
         ConcurrentKafkaListenerContainerFactory<String, UpcomingFlightNotificationEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(upcomingFlightConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, NewFlightScheduleEvent> newFlightConsumerFactory() {
+        JsonDeserializer<NewFlightScheduleEvent> deserializer =
+                new JsonDeserializer<>(NewFlightScheduleEvent.class);
+        deserializer.setRemoveTypeHeaders(false);
+        deserializer.addTrustedPackages("*");
+        deserializer.setUseTypeMapperForKey(true);
+
+        return new DefaultKafkaConsumerFactory<>(
+                Map.of(
+                        ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
+                        ConsumerConfig.GROUP_ID_CONFIG, "notification-group",
+                        ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
+                        ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, deserializer
+                ),
+                new StringDeserializer(),
+                deserializer
+        );
+    }
+
+    @Bean(name = "newFlightKafkaListenerContainerFactory")
+    public ConcurrentKafkaListenerContainerFactory<String, NewFlightScheduleEvent> newFlightKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, NewFlightScheduleEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(newFlightConsumerFactory());
         return factory;
     }
 }

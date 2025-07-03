@@ -1,4 +1,4 @@
-package com.airline.subscriptionservice.model;
+package com.airline.notificationservice.model;
 
 import jakarta.persistence.*;
 import lombok.*;

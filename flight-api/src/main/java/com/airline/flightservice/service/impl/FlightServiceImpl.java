@@ -3,6 +3,7 @@ package com.airline.flightservice.service.impl;
 import com.airline.flightservice.dto.City;
 import com.airline.flightservice.dto.FlightInformationDto;
 import com.airline.flightservice.exception.NotFoundException;
+import com.airline.flightservice.kafka.event.NewFlightScheduleEvent;
 import com.airline.flightservice.model.FlightInformation;
 import com.airline.flightservice.repository.FlightRepository;
 import com.airline.flightservice.service.FlightService;
@@ -29,6 +30,8 @@ public class FlightServiceImpl implements FlightService {
     public FlightInformationDto addFlight(FlightInformationDto flightInformationDto) {
         FlightInformation flight = mapToFlightInformation(flightInformationDto);
         FlightInformation savedFlight = flightRepository.save(flight);
+
+
         return mapToFlightInformationDto(savedFlight);
     }
     @Override
