@@ -8,4 +8,8 @@ public interface EmailSenderService {
      void sendConfirmationEmail(String recipientEmail, String token, MailType mailType) throws MailjetException
              , MailjetSocketTimeoutException;
 
-    }
+
+    void sendNotificationMail(String recipientEmail, String subject, String message) throws MailjetException
+            , MailjetSocketTimeoutException;
+
+}

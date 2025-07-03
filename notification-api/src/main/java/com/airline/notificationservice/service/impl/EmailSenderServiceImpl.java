@@ -18,6 +18,11 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class EmailSenderServiceImpl implements EmailSenderService {
 
+    private final String apiKey = "2cc95c1ec4e397076d83befed980cbfd";
+    private final  String secretKey = "b559bd598c331f7f56eab8cf0bcf8f77";
+
+
+
     //MAILJET
     //SLANJE MEJLA ZA POTVRDU NALOGA
     @Override
@@ -26,8 +31,7 @@ public class EmailSenderServiceImpl implements EmailSenderService {
 
         log.info("SEND confirmation email of type: {}", type);
 
-        String apiKey = "2cc95c1ec4e397076d83befed980cbfd";
-        String secretKey = "b559bd598c331f7f56eab8cf0bcf8f77";
+
         MailjetClient client = new MailjetClient(apiKey, secretKey, new ClientOptions("v3.1"));
 
         String subject;
@@ -70,6 +74,39 @@ public class EmailSenderServiceImpl implements EmailSenderService {
         MailjetResponse response = client.post(request);
 
         log.info("Confirmation mail sent");
+
+        if (response.getStatus() != 200) {
+            throw new RuntimeException("Failed to send email: " + response.getStatus() + " - " + response.getData());
+        }
+    }
+
+    @Override
+    public void sendNotificationMail(String recipientEmail, String subject, String message) throws MailjetException, MailjetSocketTimeoutException {
+        log.info("send mail to"+recipientEmail);
+
+        JSONObject mess = new JSONObject();
+        mess.put(Emailv31.Message.FROM, new JSONObject()
+                .put("Email", "repac01jelena@gmail.com")
+                .put("Name", "Airline"));
+        mess.put(Emailv31.Message.TO, new JSONArray()
+                .put(new JSONObject()
+                        .put("Email", recipientEmail)
+                        .put("Name", "User")));
+        mess.put(Emailv31.Message.SUBJECT, subject);
+        mess.put(Emailv31.Message.SUBJECT, subject);
+        mess.put(Emailv31.Message.HTMLPART, message);
+
+        JSONObject requestBody = new JSONObject();
+        requestBody.put(Emailv31.MESSAGES, new JSONArray().put(mess));
+
+        MailjetRequest request = new MailjetRequest(Emailv31.resource)
+                .property(Emailv31.MESSAGES, requestBody.getJSONArray(Emailv31.MESSAGES));
+
+        MailjetClient client = new MailjetClient(apiKey, secretKey, new ClientOptions("v3.1"));
+
+        MailjetResponse response = client.post(request);
+
+        log.info("Notification mail sent!");
 
         if (response.getStatus() != 200) {
             throw new RuntimeException("Failed to send email: " + response.getStatus() + " - " + response.getData());

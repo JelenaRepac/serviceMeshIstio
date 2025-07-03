@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/reservation")
+@RequestMapping("/api/reservation")
 public class ReservationController {
 
     private final ReservationService reservationService;
@@ -43,6 +43,15 @@ public class ReservationController {
                 .status(HttpStatus.OK)
                 .body(reservation);
     }
+
+    @GetMapping("/user")
+    public ResponseEntity<List<ReservationDto>> getReservationByUserId(@RequestParam(value = "userId") Long userId) {
+        List<ReservationDto> reservation = reservationService.getReservationByUserId(userId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(reservation);
+    }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<ReservationDto> updateReservation(

@@ -1,5 +1,7 @@
 package com.airline.notificationservice.kafka;
 
+import com.airline.notificationservice.kafka.event.EmailEvent;
+import com.airline.notificationservice.kafka.event.UpcomingFlightNotificationEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
@@ -37,6 +39,34 @@ public class KafkaConfig {
         ConcurrentKafkaListenerContainerFactory<String, EmailEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, UpcomingFlightNotificationEvent> upcomingFlightConsumerFactory() {
+        JsonDeserializer<UpcomingFlightNotificationEvent> deserializer =
+                new JsonDeserializer<>(UpcomingFlightNotificationEvent.class);
+        deserializer.setRemoveTypeHeaders(false);
+        deserializer.addTrustedPackages("*");
+        deserializer.setUseTypeMapperForKey(true);
+
+        return new DefaultKafkaConsumerFactory<>(
+                Map.of(
+                        ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
+                        ConsumerConfig.GROUP_ID_CONFIG, "notification-group",
+                        ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
+                        ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, deserializer
+                ),
+                new StringDeserializer(),
+                deserializer
+        );
+    }
+
+    @Bean(name = "upcomingFlightKafkaListenerContainerFactory")
+    public ConcurrentKafkaListenerContainerFactory<String, UpcomingFlightNotificationEvent> upcomingFlightKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, UpcomingFlightNotificationEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(upcomingFlightConsumerFactory());
         return factory;
     }
 }

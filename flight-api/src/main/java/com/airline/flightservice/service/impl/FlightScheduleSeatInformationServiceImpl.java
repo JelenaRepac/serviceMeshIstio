@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,13 +34,14 @@ public class FlightScheduleSeatInformationServiceImpl implements FlightScheduleS
 
         // Example: Rows A to F, seats 1 to 6 (A1-A6, B1-B6, ..., F1-F6)
         for (char row = 'A'; row <= 'F'; row++) {
-            for (int col = 1; col <= 6; col++) {
-                String seatType = inputDto.getSeatType(); // e.g., "economy"
+            for (int col = 1; col <= 30; col++) {
+                String seatType = inputDto.getSeatType();
                 Boolean bookingStatus = inputDto.getBookingStatus();
-                String seatId = row + String.valueOf(col); // e.g., "A1"
+                String seatId = String.valueOf(col) +row;
 
                 FlightScheduleSeatInformation seat = new FlightScheduleSeatInformation();
-                seat.setSeatType(seatType + "-" + seatId); // e.g., "economy-A1"
+                seat.setSeatType(seatType);
+                seat.setSeatNumber(seatId);
                 seat.setBookingStatus(bookingStatus);
                 seat.setFlightSchedule(flightSchedule);
 
@@ -76,8 +78,7 @@ public class FlightScheduleSeatInformationServiceImpl implements FlightScheduleS
 
     @Override
     public FlightScheduleSeatInformationOutputDto updateSeatInformation(Long id, FlightScheduleSeatInformationInputDto inputDto) {
-        FlightScheduleSeatInformation seatInformation = seatInformationRepository
-                .findById(id)
+        FlightScheduleSeatInformation seatInformation = seatInformationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Seat information does not exist!"));
 
         FlightSchedule flightSchedule = flightScheduleRepository.findById(inputDto.getFlightScheduleId())
@@ -101,7 +102,7 @@ public class FlightScheduleSeatInformationServiceImpl implements FlightScheduleS
 
 
     @Override
-    public List<FlightScheduleSeatInformationOutputDto> getSeatInformationByFlightScheduleIdAndBookingStatus(Long flightScheduleId, Boolean bookingStatus) {
+    public List<FlightScheduleSeatInformationOutputDto> getSeatInformationByFlightScheduleIdAndBookingStatusAndSeatNumber(Long flightScheduleId, Boolean bookingStatus, String seatNumber) {
 
         List<FlightScheduleSeatInformationOutputDto> flightScheduleSeatInformationOutputDto = seatInformationRepository.findByFlightScheduleId(flightScheduleId).stream()
                 .map(FlightScheduleSeatInformationMapper::mapToFlightScheduleSeatInformationOutputDto)
@@ -111,7 +112,22 @@ public class FlightScheduleSeatInformationServiceImpl implements FlightScheduleS
             flightScheduleSeatInformationOutputDto.removeIf(flightScheduleSeatInformation ->
                     !flightScheduleSeatInformation.getBookingStatus().equals(bookingStatus));
         }
+        if(seatNumber!=null){
+            flightScheduleSeatInformationOutputDto.removeIf(flightScheduleSeatInformation ->
+                    !flightScheduleSeatInformation.getSeatNumber().equals(seatNumber));
+        }
 
+        flightScheduleSeatInformationOutputDto.sort(Comparator.comparing(dto -> {
+            String seat = dto.getSeatNumber(); // e.g., "12C"
+            int i = 0;
+            while (i < seat.length() && Character.isDigit(seat.charAt(i))) {
+                i++;
+            }
+            int row = Integer.parseInt(seat.substring(0, i));
+            char column = seat.charAt(i);
+
+            return row * 100 + column;
+        }));
         return flightScheduleSeatInformationOutputDto;
     }
 

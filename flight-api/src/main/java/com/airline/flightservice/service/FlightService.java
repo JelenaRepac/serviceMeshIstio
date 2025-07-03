@@ -7,7 +7,6 @@ import java.util.List;
 
 public interface FlightService {
 
-    List<City> getCities(String accessKey);
 
      FlightInformationDto addFlight(FlightInformationDto flightInformationDto);
 
@@ -15,7 +14,6 @@ public interface FlightService {
 
     List<FlightInformationDto> getAllFlights();
 
-    FlightInformationDto updateFlight(Long id, FlightInformationDto flightInformationDto);
 
     void deleteFlight(Long id);
 

@@ -7,12 +7,10 @@ import jakarta.persistence.*;
 
 @Getter
 @Setter
-@ToString
-@Data
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(schema = "flights", name = "flight_details")
+@Table(schema = "flight", name = "flight_details")
 public class FlightInformation {
 
     @Id

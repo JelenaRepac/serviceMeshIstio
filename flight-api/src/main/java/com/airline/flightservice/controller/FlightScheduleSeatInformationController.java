@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/seats")
+@RequestMapping("/api/flightSchedule/seat")
 public class FlightScheduleSeatInformationController {
 
     @Autowired
@@ -22,11 +22,11 @@ public class FlightScheduleSeatInformationController {
         return ResponseEntity.ok(savedSeatInformation);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<FlightScheduleSeatInformationOutputDto> getSeatInformationById(@PathVariable Long id) {
-        FlightScheduleSeatInformationOutputDto seatInformation = seatInformationService.getSeatInformationById(id);
-        return ResponseEntity.ok(seatInformation);
-    }
+//    @GetMapping("/{id}")
+//    public ResponseEntity<FlightScheduleSeatInformationOutputDto> getSeatInformationById(@PathVariable Long id) {
+//        FlightScheduleSeatInformationOutputDto seatInformation = seatInformationService.getSeatInformationById(id);
+//        return ResponseEntity.ok(seatInformation);
+//    }
 
 
 
@@ -42,10 +42,11 @@ public class FlightScheduleSeatInformationController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/flight-schedule/{flightScheduleId}")
+    @GetMapping("/{flightScheduleId}")
     public ResponseEntity<List<FlightScheduleSeatInformationOutputDto>> getSeatInformationByFlightScheduleId(@PathVariable Long flightScheduleId,
-                                                                                                             @RequestParam Boolean bookingStatus) {
-        List<FlightScheduleSeatInformationOutputDto> seatInformationList = seatInformationService.getSeatInformationByFlightScheduleIdAndBookingStatus(flightScheduleId, bookingStatus);
+                                                                                                             @RequestParam(required = false) Boolean bookingStatus,
+                                                                                                             @RequestParam(required = false, value = "seatNumber") String seatNumber) {
+        List<FlightScheduleSeatInformationOutputDto> seatInformationList = seatInformationService.getSeatInformationByFlightScheduleIdAndBookingStatusAndSeatNumber(flightScheduleId, bookingStatus, seatNumber);
         return ResponseEntity.ok(seatInformationList);
     }
 

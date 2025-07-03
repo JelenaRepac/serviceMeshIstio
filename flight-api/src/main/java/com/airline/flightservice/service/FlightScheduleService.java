@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface FlightScheduleService {
     List<FlightSchedule> getAllFlightSchedules();
+    FlightSchedule findById(Long id);
+
 
     FlightSchedule addFlightSchedule(FlightSchedule flightScheduleInputDto);
 

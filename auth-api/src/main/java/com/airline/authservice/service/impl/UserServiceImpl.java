@@ -19,22 +19,18 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import static com.airline.authservice.security.SecurityConstants.*;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -46,29 +42,23 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
     private final ConfirmationTokenRepository confirmationTokenRepository;
-    private final RestTemplate restTemplate;
-    private final AdminRepository adminRepository;
     private final TokenGenerationService tokenGenerationService;
     private final MessageSource messageSource;
 
     private final RemoteEmailSenderService remoteEmailSenderService;
     private final LocaleLanguage localeLanguage;
-    private final TwoFactorAuthentication twoFactorAuthentication;
 
 
     public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder encoder,
-                           ConfirmationTokenRepository confirmationTokenRepository, RestTemplate restTemplate,
-                           AdminRepository adminRepository, TokenGenerationService tokenGenerationService, MessageSource messageSource, RemoteEmailSenderService remoteEmailSenderService, LocaleLanguage localeLanguage, TwoFactorAuthentication twoFactorAuthentication) {
+                           ConfirmationTokenRepository confirmationTokenRepository,
+                           TokenGenerationService tokenGenerationService, MessageSource messageSource, RemoteEmailSenderService remoteEmailSenderService, LocaleLanguage localeLanguage) {
         this.userRepository = userRepository;
         this.encoder = encoder;
         this.confirmationTokenRepository = confirmationTokenRepository;
-        this.restTemplate = restTemplate;
-        this.adminRepository = adminRepository;
         this.tokenGenerationService = tokenGenerationService;
         this.messageSource = messageSource;
         this.remoteEmailSenderService = remoteEmailSenderService;
         this.localeLanguage = localeLanguage;
-        this.twoFactorAuthentication = twoFactorAuthentication;
     }
 
     @Override
@@ -300,25 +290,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll();
     }
 
-    @Override
-    public List<Country> getCountry() {
-        String url = "http://flight:9090/flight/flight/country?accessKey=a0c2b52e19dd4518239d16ae667b4c22";
 
-        // Deserialize response directly into List<Country>
-        List<Country> countries = restTemplate.exchange(
-                url, HttpMethod.GET, null, new ParameterizedTypeReference<List<Country>>() {
-                }
-        ).getBody();
-
-        if (countries != null) {
-            countries.forEach(country -> System.out.println(country.getCountryName()));
-        } else {
-            System.out.println("No data found in the response");
-        }
-
-        return countries != null ? countries : Collections.emptyList();
-
-    }
 
 
 }

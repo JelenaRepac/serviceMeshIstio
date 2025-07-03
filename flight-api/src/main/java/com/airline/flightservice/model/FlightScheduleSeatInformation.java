@@ -1,16 +1,15 @@
 package com.airline.flightservice.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import jakarta.persistence.*;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(schema = "flights", name = "flight_schedule_seat")
+@Table(schema = "flight", name = "flight_schedule_seat")
 public class FlightScheduleSeatInformation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +19,7 @@ public class FlightScheduleSeatInformation {
     private Boolean bookingStatus;
 
     private String seatNumber;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "flight_schedule_id")
     private FlightSchedule flightSchedule;
 }

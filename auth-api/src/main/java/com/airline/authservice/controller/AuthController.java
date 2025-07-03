@@ -55,7 +55,7 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
     //GET NEW ACCESS TOKEN
-    @PostMapping
+    @PostMapping("/token")
     public TokenDto checkAndGenerateTokens(@RequestBody @Validated TokenAuthorizationDto tokenAuthorizationDto, HttpServletRequest request){
         String uid = (String) request.getAttribute("requestId");
         return userService.checkAndGenerateTokens(tokenAuthorizationDto, uid);

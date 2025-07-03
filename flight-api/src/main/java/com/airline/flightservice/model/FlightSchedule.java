@@ -10,7 +10,7 @@ import java.time.LocalTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(schema = "flights", name = "flight_schedule")
+@Table(schema = "flight", name = "flight_schedule")
 public class FlightSchedule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +23,7 @@ public class FlightSchedule {
     private String startAirport;
     private String endAirport;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "flight_details_id")
     private FlightInformation flightInformation;
 }

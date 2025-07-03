@@ -48,6 +48,14 @@ public class FlightScheduleController {
         return new ResponseEntity<>(flightScheduleService.getAllFlightSchedules(), HttpStatus.OK);
     }
 
+    @GetMapping(value = "/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<FlightSchedule> getById(
+            @PathVariable Long id){
+
+       FlightSchedule flightSchedule = flightScheduleService.findById(id);
+
+        return new ResponseEntity<>(flightSchedule, HttpStatus.OK);
+    }
 
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

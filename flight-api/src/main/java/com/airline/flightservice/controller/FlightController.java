@@ -1,6 +1,7 @@
 package com.airline.flightservice.controller;
 
 import com.airline.flightservice.dto.FlightInformationDto;
+import com.airline.flightservice.model.Country;
 import com.airline.flightservice.service.impl.FlightServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -50,7 +51,7 @@ public class FlightController {
     }
 
 
-//    @GetMapping("/countries")
+//    @GetMapping("/country")
 //    public List<Country> getCountries(@RequestParam String accessKey,
 //                                      @RequestParam Integer offset,
 //                                      @RequestParam Integer limit) {
@@ -58,7 +59,7 @@ public class FlightController {
 //    }
 
 
-//    @GetMapping("/airports")
+//    @GetMapping("/airport")
 //    public List<Airport> getAirports(@RequestParam String accessKey) {
 //        return flightService.getAirports(accessKey);
 //    }

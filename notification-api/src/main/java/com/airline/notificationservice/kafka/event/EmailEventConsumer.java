@@ -1,4 +1,4 @@
-package com.airline.notificationservice.kafka;
+package com.airline.notificationservice.kafka.event;
 
 import com.airline.notificationservice.common.MailType;
 import com.airline.notificationservice.service.EmailSenderService;

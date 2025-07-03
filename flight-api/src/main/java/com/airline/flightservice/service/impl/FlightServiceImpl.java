@@ -8,7 +8,6 @@ import com.airline.flightservice.repository.FlightRepository;
 import com.airline.flightservice.service.FlightService;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,95 +16,14 @@ import static com.airline.flightservice.mapper.FlightInformationMapper.*;
 
 @Service
 public class FlightServiceImpl implements FlightService {
-//    @Value("${external.api.url}")
-//    private String externalApiUrl;
-    private final String productServiceUrl = "http://product:9090/product/"; // URL of the ProductService
-    private final RestTemplate restTemplate;
 
     private final FlightRepository flightRepository;
 
 
-    public FlightServiceImpl(RestTemplate restTemplate, FlightRepository flightRepository) {
-        this.restTemplate = restTemplate;
+    public FlightServiceImpl(FlightRepository flightRepository) {
         this.flightRepository = flightRepository;
     }
 
-
-//
-//
-//    @Override
-//    @Cacheable(value = "flightDataCache")
-//    public List<Country> getCountries(String accessKey,int offset, int limit) {
-//        // Pozivanje eksternog API-ja
-//        String url = externalApiUrl + "/countries?access_key=" + accessKey + "&offset=" + offset + "&limit=" + limit;
-//
-//        // Uporaba generičkog ApiResponse sa specifičnim tipom Country
-//        ParameterizedTypeReference<ApiResponse<Country>> responseType = new ParameterizedTypeReference<>() {};
-//        ResponseEntity<ApiResponse<Country>> responseEntity = restTemplate.exchange(
-//                url,
-//                HttpMethod.GET,
-//                null,
-//                responseType
-//        );
-//
-//        ApiResponse<Country> apiResponse = responseEntity.getBody();
-//        if (apiResponse != null && apiResponse.getData() != null) {
-//            System.out.println(apiResponse.getData().get(0));
-//
-//            // Filtriranje samo potrebnih podataka
-//            return apiResponse.getData().stream()
-//                    .map(country -> {
-//                        Country response = new Country();
-//                        response.setCountryName(country.getCountryName());
-//                        response.setCountryId(country.getCountryId());
-//                        return response;
-//                    })
-//                    .collect(Collectors.toList());
-//        }
-//
-//        return Collections.emptyList();
-//    }
-//
-//    @Override
-//    @Cacheable(value = "flightDataCache")
-//    public List<City> getCities(String accessKey) {
-//        // Pozivanje eksternog API-ja
-//        String url = externalApiUrl + "/cities?access_key=" + accessKey;
-//
-//        ParameterizedTypeReference<ApiResponse<City>> responseType = new ParameterizedTypeReference<>() {};
-//        ResponseEntity<ApiResponse<City>> responseEntity = restTemplate.exchange(
-//                url,
-//                HttpMethod.GET,
-//                null,
-//                responseType
-//        );
-//
-//        ApiResponse<City> apiResponse = responseEntity.getBody();
-//
-//        if (apiResponse != null && apiResponse.getData() != null) {
-//            System.out.println(apiResponse.getData().get(0));
-//
-//            // Filtriranje samo potrebnih podataka
-//            return apiResponse.getData().stream()
-//                    .map(city -> {
-//                        City response = new City();
-//                        response.setId(city.getId());
-//                        response.setName(city.getName());
-//                        response.setIataCode(city.getIataCode());
-//                        response.setIso2(city.getIso2());
-//                        return response;
-//                    })
-//                    .collect(Collectors.toList());
-//        }
-//
-//        return Collections.emptyList();
-//    }
-//
-
-    @Override
-    public List<City> getCities(String accessKey) {
-        return null;
-    }
 
     @Override
     public FlightInformationDto addFlight(FlightInformationDto flightInformationDto) {
@@ -129,11 +47,6 @@ public class FlightServiceImpl implements FlightService {
 
        return mapToFlightInformationListDto(flightInformationDtoList);
 
-    }
-
-    @Override
-    public FlightInformationDto updateFlight(Long id, FlightInformationDto flightInformationDto) {
-        return null;
     }
 
     @Override

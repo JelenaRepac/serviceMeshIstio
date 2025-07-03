@@ -1,4 +1,4 @@
-package com.airline.notificationservice.config;
+package com.airline.subscriptionservice.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

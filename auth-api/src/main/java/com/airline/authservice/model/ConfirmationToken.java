@@ -46,6 +46,7 @@ public class ConfirmationToken {
 
         SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
 
+        this.emailToSet= user.getEmail();
         // Create JWT token
          this.confirmationToken = BEARER_TOKEN_TYPE + Jwts.builder()
                 .setSubject(user.getEmail())
