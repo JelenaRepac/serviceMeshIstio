@@ -16,6 +16,7 @@
         <option value="$PROJECT_DIR$/chat-api/pom.xml" />
         <option value="$PROJECT_DIR$/notification-api/pom.xml" />
         <option value="$PROJECT_DIR$/subscription-api/pom.xml" />
+        <option value="$PROJECT_DIR$/voucher-api/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">

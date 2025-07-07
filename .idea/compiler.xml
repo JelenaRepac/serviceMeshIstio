@@ -7,11 +7,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="auth-api" />
+        <module name="voucher-api" />
         <module name="flight-api" />
-        <module name="subscription-api" />
         <module name="notification-api" />
         <module name="reservation-api" />
+        <module name="auth-api" />
+        <module name="subscription-api" />
         <module name="chat-api" />
       </profile>
     </annotationProcessing>
@@ -29,6 +30,7 @@
       <module name="notification-api" options="-parameters" />
       <module name="reservation-api" options="-parameters" />
       <module name="subscription-api" options="-parameters" />
+      <module name="voucher-api" options="-parameters" />
       <module name="zuul" options="-parameters" />
     </option>
   </component>
