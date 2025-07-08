@@ -1,9 +1,8 @@
 package com.airline.flightservice.controller;
 
 import com.airline.flightservice.dto.FlightScheduleFilter;
-import com.airline.flightservice.model.FlightSchedule;
 import com.airline.flightservice.service.FlightScheduleService;
-import com.airline.flightservice.specification.FlightScheduleSpecification;
+import com.airlines.airlinesharedmodule.FlightSchedule;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -11,8 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.Date;
 import java.util.List;
 
 @RestController

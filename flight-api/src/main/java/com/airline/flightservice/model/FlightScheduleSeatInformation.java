@@ -1,5 +1,6 @@
 package com.airline.flightservice.model;
 
+import com.airlines.airlinesharedmodule.FlightSchedule;
 import lombok.*;
 
 import jakarta.persistence.*;

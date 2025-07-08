@@ -1,12 +1,11 @@
 package com.airline.flightservice.specification;
 
 import com.airline.flightservice.dto.FlightScheduleFilter;
-import com.airline.flightservice.model.FlightSchedule;
+import com.airlines.airlinesharedmodule.FlightSchedule;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 

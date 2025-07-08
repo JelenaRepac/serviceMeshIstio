@@ -1,6 +1,6 @@
 package com.airline.flightservice.repository;
 
-import com.airline.flightservice.model.FlightSchedule;
+import com.airlines.airlinesharedmodule.FlightSchedule;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;

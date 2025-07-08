@@ -1,7 +1,7 @@
 package com.airline.flightservice.service;
 
 import com.airline.flightservice.dto.FlightScheduleFilter;
-import com.airline.flightservice.model.FlightSchedule;
+import com.airlines.airlinesharedmodule.FlightSchedule;
 
 import java.util.List;
 

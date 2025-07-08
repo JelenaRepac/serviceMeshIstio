@@ -2,8 +2,8 @@ package com.airline.flightservice.mapper;
 
 import com.airline.flightservice.dto.FlightScheduleSeatInformationInputDto;
 import com.airline.flightservice.dto.FlightScheduleSeatInformationOutputDto;
-import com.airline.flightservice.model.FlightSchedule;
 import com.airline.flightservice.model.FlightScheduleSeatInformation;
+import com.airlines.airlinesharedmodule.FlightSchedule;
 
 import java.util.List;
 import java.util.stream.Collectors;

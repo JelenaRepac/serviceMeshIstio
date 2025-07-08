@@ -1,6 +1,6 @@
 package com.airline.flightservice.repository;
 
-import com.airline.flightservice.model.FlightInformation;
+import com.airlines.airlinesharedmodule.FlightInformation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

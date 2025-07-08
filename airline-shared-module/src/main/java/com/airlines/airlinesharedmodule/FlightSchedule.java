@@ -1,8 +1,10 @@
-package com.airline.flightservice.model;
-
-import lombok.*;
+package com.airlines.airlinesharedmodule;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -26,4 +28,6 @@ public class FlightSchedule {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "flight_details_id")
     private FlightInformation flightInformation;
+
+
 }

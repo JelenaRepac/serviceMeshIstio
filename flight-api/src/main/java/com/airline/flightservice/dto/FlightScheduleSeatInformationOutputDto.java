@@ -1,7 +1,7 @@
 package com.airline.flightservice.dto;
 
 
-import com.airline.flightservice.model.FlightSchedule;
+import com.airlines.airlinesharedmodule.FlightSchedule;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

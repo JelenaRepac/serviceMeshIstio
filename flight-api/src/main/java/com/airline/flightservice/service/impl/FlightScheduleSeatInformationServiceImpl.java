@@ -3,11 +3,11 @@ package com.airline.flightservice.service.impl;
 import com.airline.flightservice.dto.FlightScheduleSeatInformationInputDto;
 import com.airline.flightservice.dto.FlightScheduleSeatInformationOutputDto;
 import com.airline.flightservice.mapper.FlightScheduleSeatInformationMapper;
-import com.airline.flightservice.model.FlightSchedule;
 import com.airline.flightservice.model.FlightScheduleSeatInformation;
 import com.airline.flightservice.repository.FlightScheduleRepository;
 import com.airline.flightservice.repository.FlightScheduleSeatInformationRepository;
 import com.airline.flightservice.service.FlightScheduleSeatInformationService;
+import com.airlines.airlinesharedmodule.FlightSchedule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

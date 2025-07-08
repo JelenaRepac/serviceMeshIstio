@@ -1,13 +1,11 @@
 package com.airline.flightservice.service.impl;
 
-import com.airline.flightservice.dto.City;
 import com.airline.flightservice.dto.FlightInformationDto;
 import com.airline.flightservice.exception.NotFoundException;
-import com.airline.flightservice.kafka.event.NewFlightScheduleEvent;
-import com.airline.flightservice.model.FlightInformation;
 import com.airline.flightservice.repository.FlightRepository;
 import com.airline.flightservice.service.FlightService;
 
+import com.airlines.airlinesharedmodule.FlightInformation;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

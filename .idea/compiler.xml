@@ -8,12 +8,14 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="voucher-api" />
+        <module name="airline-shared-module" />
         <module name="flight-api" />
         <module name="notification-api" />
         <module name="reservation-api" />
         <module name="auth-api" />
         <module name="subscription-api" />
         <module name="chat-api" />
+        <module name="pricing-api" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -23,11 +25,13 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="airline-shared-module" options="-parameters" />
       <module name="auth-api" options="-parameters" />
       <module name="chat-api" options="-parameters" />
       <module name="eureka" options="-parameters" />
       <module name="flight-api" options="-parameters" />
       <module name="notification-api" options="-parameters" />
+      <module name="pricing-api" options="-parameters" />
       <module name="reservation-api" options="-parameters" />
       <module name="subscription-api" options="-parameters" />
       <module name="voucher-api" options="-parameters" />

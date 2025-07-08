@@ -1,7 +1,7 @@
 package com.airline.flightservice.mapper;
 
 import com.airline.flightservice.dto.FlightInformationDto;
-import com.airline.flightservice.model.FlightInformation;
+import com.airlines.airlinesharedmodule.FlightInformation;
 
 import java.util.List;
 import java.util.stream.Collectors;
