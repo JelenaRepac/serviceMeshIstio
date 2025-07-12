@@ -239,23 +239,23 @@ public class UserServiceImpl implements UserService {
                 oldUser.get().setPhoneNumber(user.getPhoneNumber());
             if (user.getCountry() != null)
                 oldUser.get().setCountry(user.getCountry());
-            if (user.getPassword() != null) {
-                BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-                String encodedPassword = encoder.encode(user.getPassword());
-                oldUser.get().setPassword(encodedPassword);
-            }
+//            if (user.getPassword() != null) {
+//                BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+//                String encodedPassword = encoder.encode(user.getPassword());
+//                oldUser.get().setPassword(encodedPassword);
+//            }
 
             // If the email is updated, handle confirmation logic
-            if (user.getEmail() != null) {
-                // Save the user before creating confirmation token
-                oldUser.get().setEmail(user.getEmail());
-                userRepository.save(oldUser.get());  // Ensure the user is saved before creating a token
+            if(user.getEmail()!=null && !user.getEmail().equals(oldUser.get().getEmail())) {
+                    // Save the user before creating confirmation token
+                    oldUser.get().setEmail(user.getEmail());
+                    userRepository.save(oldUser.get());  // Ensure the user is saved before creating a token
 
-                ConfirmationToken confirmationToken = new ConfirmationToken(oldUser.get());  // Create token with the updated user
-                confirmationToken.setEmailToSet(user.getEmail());
-                confirmationTokenRepository.save(confirmationToken);  // Save the confirmation token
+                    ConfirmationToken confirmationToken = new ConfirmationToken(oldUser.get());  // Create token with the updated user
+                    confirmationToken.setEmailToSet(user.getEmail());
+                    confirmationTokenRepository.save(confirmationToken);  // Save the confirmation token
 
-                // emailSenderService.sendConfirmationEmail(user.getEmail(), confirmationToken.getConfirmationToken());
+                    // emailSenderService.sendConfirmationEmail(user.getEmail(), confirmationToken.getConfirmationToken());
             }
 
             // Save the updated user
