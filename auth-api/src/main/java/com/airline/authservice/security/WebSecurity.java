@@ -53,7 +53,7 @@ public class WebSecurity {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(LOGIN_PATH,
                                 REGISTRATION_PATH,
-                                CONFIRMATION_PATH, "/chat/message","api/auth/token").permitAll()
+                                CONFIRMATION_PATH, "/chat/message","api/auth/token","/passport/Callback").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilter(jwtAuthenticationFilter)

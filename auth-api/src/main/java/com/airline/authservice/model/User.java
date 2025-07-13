@@ -58,4 +58,6 @@ public class User {
 
     private boolean isEnabled;
 
+    private String passportId;
+
 }
