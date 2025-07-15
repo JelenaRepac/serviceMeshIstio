@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: subscription
+  labels:
+    app: subscription
+    service: subscription
+spec:
+  ports:
+    - port: 8083
+      name: http
+  selector:
+    app: subscription
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: subscription-details
+  labels:
+    account: subscription
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subscription-v1
+  labels:
+    app: subscription
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: subscription
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: subscription
+        version: v1
+    spec:
+      serviceAccountName: subscription-details
+      containers:
+        - name: subscription
+          image: istio-subscription-api:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8083

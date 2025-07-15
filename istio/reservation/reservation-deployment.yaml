@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: reservation
+  labels:
+    app: reservation
+    service: reservation
+spec:
+  ports:
+    - port: 9000
+      name: http
+  selector:
+    app: reservation
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: reservation-details
+  labels:
+    account: reservation
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reservation-v1
+  labels:
+    app: reservation
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reservation
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: reservation
+        version: v1
+    spec:
+      serviceAccountName: reservation-details
+      containers:
+        - name: reservation
+          image: istio-reservation-api:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 9000

@@ -5,10 +5,10 @@ FROM eclipse-temurin:17-jdk
 WORKDIR /app
 
 # Copy the JAR file into the container
-COPY ./target/product-api-0.0.1-SNAPSHOT.jar product.jar
+COPY ./target/reservation-api-0.0.1-SNAPSHOT.jar reservation.jar
 
-# Expose port 9090 for the application
-EXPOSE 9090
+# Expose port 9000 for the application
+EXPOSE 9000
 
 # Specify the command to run the application
-ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "product.jar"]
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "reservation.jar"]

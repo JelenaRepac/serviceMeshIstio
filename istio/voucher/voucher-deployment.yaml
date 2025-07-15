@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: voucher
+  labels:
+    app: voucher
+    service: voucher
+spec:
+  ports:
+    - port: 8001
+      name: http
+  selector:
+    app: voucher
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: voucher-details
+  labels:
+    account: voucher
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voucher-v1
+  labels:
+    app: voucher
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voucher
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: voucher
+        version: v1
+    spec:
+      serviceAccountName: voucher-details
+      containers:
+        - name: voucher
+          image: istio-voucher-api:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8001

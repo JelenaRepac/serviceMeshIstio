@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pricing
+  labels:
+    app: pricing
+    service: pricing
+spec:
+  ports:
+    - port: 8082
+      name: http
+  selector:
+    app: pricing
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pricing-details
+  labels:
+    account: pricing
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pricing-v1
+  labels:
+    app: pricing
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pricing
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: pricing
+        version: v1
+    spec:
+      serviceAccountName: pricing-details
+      containers:
+        - name: pricing
+          image: istio-pricing-api:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8082
