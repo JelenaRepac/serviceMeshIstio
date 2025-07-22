@@ -76,7 +76,8 @@ public class WebSecurity {
                 "http://localhost:4200",
                 "http://localhost:8081",
                 "http://localhost:8080",
-                "http://localhost:9000"
+                "http://localhost:9000",
+                "http://localhost:8083"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE", "PUT", "PATCH"));
         configuration.setAllowedHeaders(Collections.singletonList("*"));

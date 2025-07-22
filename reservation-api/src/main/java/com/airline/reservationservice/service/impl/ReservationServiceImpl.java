@@ -14,6 +14,7 @@ import com.airline.reservationservice.model.Reservation;
 import com.airline.reservationservice.repository.ReservationRepository;
 import com.airline.reservationservice.service.RemoteEmailSenderService;
 import com.airline.reservationservice.service.ReservationService;
+import com.airlines.airlinesharedmodule.Voucher;
 import lombok.extern.slf4j.Slf4j;
 import org.h2.engine.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +24,14 @@ import org.springframework.http.*;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -62,6 +65,7 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReservationDto createReservation(ReservationDto reservationDTO, String authHeader) {
 
         log.info("CREATE RESERVATION");
@@ -82,7 +86,7 @@ public class ReservationServiceImpl implements ReservationService {
 
             //GET KONKRETNO MESTO - PROVERA DA LI JE REZERVISANO
             List<FlightScheduleSeatResponse> flightScheduleSeatResponseResponseEntity = getSeatInfoByFlightScheduleIdAndSeatNumber(reservation, authHeader);
-            if (response != null) {
+            if (flightScheduleSeatResponseResponseEntity != null) {
                 FlightScheduleSeatResponse flightScheduleSeatResponse = flightScheduleSeatResponseResponseEntity.get(0);
                 if (flightScheduleSeatResponse.getBookingStatus().equals(true)) {
                     throw new BadRequestCustomException("Seat is reserved.", "400");
@@ -94,6 +98,18 @@ public class ReservationServiceImpl implements ReservationService {
             } else {
                 throw new BadRequestCustomException("Failed to fetch seat " + reservation.getSeatNumber(), "400");
             }
+
+            //VAUCHER
+
+            if (reservationDTO.getVoucherId() != null) {
+                boolean isValid = validateVoucher(reservationDTO.getVoucherId(), reservation.getUserId());
+                if (!isValid) {
+                    throw new IllegalArgumentException("Invalid or already used voucher");
+                }
+                    reservation.setVoucherId(reservationDTO.getVoucherId());
+            }
+
+
             Reservation savedItem = this.reservationRepository.save(reservation);
             log.info("Successfully created reservation");
 
@@ -111,9 +127,25 @@ public class ReservationServiceImpl implements ReservationService {
                 throw new IllegalStateException("Failed to send e-mail.");
             }
         } catch (Exception e) {
-            throw new RuntimeException("Error occurred while creating reservation" + e.getMessage());
+            throw new BadRequestCustomException("Error occurred while creating reservation" + e.getMessage(), "400");
         }
 
+    }
+
+    public boolean validateVoucher(String code, Long userId) {
+        WebClient webClient = WebClient.builder()
+                .baseUrl("http://localhost:8001") // <-- Set your host and port here
+                .build();
+
+        return webClient.post()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/api/voucher/validate")
+                        .queryParam("code", code)
+                        .queryParam("userId", userId)
+                        .build())
+                .retrieve()
+                .bodyToMono(Boolean.class)
+                .block();
     }
 
     @Override

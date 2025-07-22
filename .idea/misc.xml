@@ -20,6 +20,8 @@
         <option value="$PROJECT_DIR$/pricing-api/pom.xml" />
         <option value="$PROJECT_DIR$/pricing-api/airline-shared-module/pom.xml" />
         <option value="$PROJECT_DIR$/airline-shared-module/pom.xml" />
+        <option value="$PROJECT_DIR$/paymant-api/pom.xml" />
+        <option value="$PROJECT_DIR$/payment-api/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">

@@ -16,6 +16,7 @@
         <module name="subscription-api" />
         <module name="chat-api" />
         <module name="pricing-api" />
+        <module name="payment-api" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -31,6 +32,7 @@
       <module name="eureka" options="-parameters" />
       <module name="flight-api" options="-parameters" />
       <module name="notification-api" options="-parameters" />
+      <module name="payment-api" options="-parameters" />
       <module name="pricing-api" options="-parameters" />
       <module name="reservation-api" options="-parameters" />
       <module name="subscription-api" options="-parameters" />

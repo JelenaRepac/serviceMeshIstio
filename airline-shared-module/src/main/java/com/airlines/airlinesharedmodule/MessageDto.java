@@ -1,4 +1,4 @@
-package com.airline.authservice.dto;
+package com.airlines.airlinesharedmodule;
 
 import lombok.*;
 

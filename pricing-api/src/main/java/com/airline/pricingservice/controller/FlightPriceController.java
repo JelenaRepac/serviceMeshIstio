@@ -1,7 +1,7 @@
 package com.airline.pricingservice.controller;
 
 
-import com.airline.pricingservice.service.impl.FlightPriceService;
+import com.airline.pricingservice.service.FlightPriceService;
 import com.airlines.airlinesharedmodule.FlightPrice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

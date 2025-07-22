@@ -20,6 +20,11 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
+    public Voucher getVoucher(Long id) {
+        return voucherRepository.getById(id);
+    }
+
+    @Override
     public Voucher createVoucher(Voucher dto) {
 
         return voucherRepository.save(dto);

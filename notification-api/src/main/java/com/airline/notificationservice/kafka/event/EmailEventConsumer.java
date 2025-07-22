@@ -27,6 +27,6 @@ public class EmailEventConsumer {
 
     private void sendEmail(String email, String token, MailType mailType) throws MailjetSocketTimeoutException, MailjetException {
         // Implementacija slanja mejla
-        emailSenderService.sendConfirmationEmail(email, token, mailType);
+        emailSenderService.sendEmail(email, token, mailType);
     }
 }

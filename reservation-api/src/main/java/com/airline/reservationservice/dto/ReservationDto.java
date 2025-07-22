@@ -18,4 +18,6 @@ public class ReservationDto {
     private Boolean confirmed;
     private LocalDateTime reservedAt;
 
+    private String voucherId;
+
 }

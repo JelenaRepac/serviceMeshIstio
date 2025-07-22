@@ -25,4 +25,6 @@ public class Reservation {
     private Boolean confirmed;
     private LocalDateTime reservedAt;
 
+    private String voucherId;
+
 }

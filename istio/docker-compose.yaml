@@ -1,131 +1,131 @@
 services:
-  db:
-    image: postgres:14
-    container_name: airline-postgres
-    environment:
-      POSTGRES_DB: airline_users
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin
-    ports:
-      - "5432:5432"
-
-  flight-api:
-    build:
-      context: ../flight-api
-      dockerfile: Dockerfile
-    ports:
-      - "9090:9090"
-    volumes:
-      - ../flight-api/target:/app/target
-    networks:
-      - istio
-    deploy:
-      replicas: 1
-    depends_on:
-      - kafka
-
-  reservation-api:
-    build:
-      context: ../reservation-api
-      dockerfile: Dockerfile
-    ports:
-      - "9000:9000"
-    volumes:
-      - ../reservation-api/target:/app/target
-    networks:
-      - istio
-    deploy:
-      replicas: 1
-    depends_on:
-      - kafka
-
-  voucher-api:
-    build:
-      context: ../voucher-api
-      dockerfile: Dockerfile
-    ports:
-      - "8001:8001"
-    volumes:
-      - ../voucher-api/target:/app/target
-    networks:
-      - istio
-    deploy:
-      replicas: 1
-    depends_on:
-      - kafka
-
-  subscription-api:
-    build:
-      context: ../subscription-api
-      dockerfile: Dockerfile
-    ports:
-      - "8083:8083"
-    volumes:
-      - ../subscription-api/target:/app/target
-    networks:
-      - istio
-    deploy:
-      replicas: 1
-    depends_on:
-      - kafka
-
-  pricing-api:
-    build:
-      context: ../pricing-api
-      dockerfile: Dockerfile
-    ports:
-      - "8082:8082"
-    volumes:
-      - ../pricing-api/target:/app/target
-    networks:
-      - istio
-    deploy:
-      replicas: 1
-    depends_on:
-      - kafka
-
-  notification-api:
-    build:
-      context: ../notification-api
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    volumes:
-      - ../notification-api/target:/app/target
-    networks:
-      - istio
-    depends_on:
-      - kafka
-
-  auth-api:
-    build:
-      context: ../auth-api
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    volumes:
-      - ../auth-api/target:/app/target
-    networks:
-      - istio
-    depends_on:
-      - kafka
-
-  frontend:
-    build:
-      context: ../airlines-app
-      dockerfile: Dockerfile
-    container_name: airlines-app
-    ports:
-      - "4200:80"
-    networks:
-      - istio
-    depends_on:
-      - flight-api
-      - auth-api
-      - reservation-api
-      - subscription-api
-      - pricing-api
-      - voucher-api
+#  db:
+#    image: postgres:14
+#    container_name: airline-postgres
+#    environment:
+#      POSTGRES_DB: airline_users
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: admin
+#    ports:
+#      - "5432:5432"
+#
+#  flight-api:
+#    build:
+#      context: ../flight-api
+#      dockerfile: Dockerfile
+#    ports:
+#      - "9090:9090"
+#    volumes:
+#      - ../flight-api/target:/app/target
+#    networks:
+#      - istio
+#    deploy:
+#      replicas: 1
+#    depends_on:
+#      - kafka
+#
+#  reservation-api:
+#    build:
+#      context: ../reservation-api
+#      dockerfile: Dockerfile
+#    ports:
+#      - "9000:9000"
+#    volumes:
+#      - ../reservation-api/target:/app/target
+#    networks:
+#      - istio
+#    deploy:
+#      replicas: 1
+#    depends_on:
+#      - kafka
+#
+#  voucher-api:
+#    build:
+#      context: ../voucher-api
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8001:8001"
+#    volumes:
+#      - ../voucher-api/target:/app/target
+#    networks:
+#      - istio
+#    deploy:
+#      replicas: 1
+#    depends_on:
+#      - kafka
+#
+#  subscription-api:
+#    build:
+#      context: ../subscription-api
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8083:8083"
+#    volumes:
+#      - ../subscription-api/target:/app/target
+#    networks:
+#      - istio
+#    deploy:
+#      replicas: 1
+#    depends_on:
+#      - kafka
+#
+#  pricing-api:
+#    build:
+#      context: ../pricing-api
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8082:8082"
+#    volumes:
+#      - ../pricing-api/target:/app/target
+#    networks:
+#      - istio
+#    deploy:
+#      replicas: 1
+#    depends_on:
+#      - kafka
+#
+#  notification-api:
+#    build:
+#      context: ../notification-api
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8080:8080"
+#    volumes:
+#      - ../notification-api/target:/app/target
+#    networks:
+#      - istio
+#    depends_on:
+#      - kafka
+#
+#  auth-api:
+#    build:
+#      context: ../auth-api
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8000:8000"
+#    volumes:
+#      - ../auth-api/target:/app/target
+#    networks:
+#      - istio
+#    depends_on:
+#      - kafka
+#
+#  frontend:
+#    build:
+#      context: ../airlines-app
+#      dockerfile: Dockerfile
+#    container_name: airlines-app
+#    ports:
+#      - "4200:80"
+#    networks:
+#      - istio
+#    depends_on:
+#      - flight-api
+#      - auth-api
+#      - reservation-api
+#      - subscription-api
+#      - pricing-api
+#      - voucher-api
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.0

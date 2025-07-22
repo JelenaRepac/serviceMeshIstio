@@ -23,6 +23,11 @@ public class VoucherController {
     public ResponseEntity<Voucher> createVoucher(@RequestBody Voucher dto) {
         return ResponseEntity.ok(voucherService.createVoucher(dto));
     }
+    @GetMapping("/{id}")
+    public ResponseEntity<Voucher> getVoucher(@PathVariable Long id) {
+        return ResponseEntity.ok(voucherService.getVoucher(id));
+    }
+
 
     @PostMapping("/assign")
     public ResponseEntity<Voucher> assignVoucher(@RequestParam String code, @RequestParam Long userId) {

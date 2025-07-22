@@ -145,6 +145,12 @@
       <artifactId>google-auth-library-oauth2-http</artifactId>
       <version>1.37.1</version>
     </dependency>
+      <dependency>
+          <groupId>com.airlines</groupId>
+          <artifactId>airline-shared-module</artifactId>
+          <version>0.0.1-SNAPSHOT</version>
+          <scope>compile</scope>
+      </dependency>
 
   </dependencies>
 

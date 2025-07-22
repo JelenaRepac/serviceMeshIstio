@@ -1,7 +1,6 @@
 package com.airline.authservice.service;
 
-import com.airline.authservice.dto.MessageDto;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.airlines.airlinesharedmodule.MessageDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 

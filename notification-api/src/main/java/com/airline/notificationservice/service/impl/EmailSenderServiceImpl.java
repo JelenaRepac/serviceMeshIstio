@@ -26,7 +26,7 @@ public class EmailSenderServiceImpl implements EmailSenderService {
     //MAILJET
     //SLANJE MEJLA ZA POTVRDU NALOGA
     @Override
-    public void sendConfirmationEmail(String recipientEmail, String token, MailType type)
+    public void sendEmail(String recipientEmail, String token, MailType type)
             throws MailjetException, MailjetSocketTimeoutException {
 
         log.info("SEND confirmation email of type: {}", type);
@@ -49,6 +49,15 @@ public class EmailSenderServiceImpl implements EmailSenderService {
                 htmlPart = "Thank you for your reservation! View details here: "
                         + "<a href='http://localhost:8001/reservation/confirm?token=" + token + "'>View Reservation</a>";
                 break;
+            case PAYMENT_SUCCESSFULLY:
+                subject = "Payment successfully completed!";
+                htmlPart = "Thank you for your payment.<br><br>" +
+                        "Your transaction has been processed successfully and your booking is now confirmed.<br><br>" +
+                        "You will receive additional details shortly.<br><br>" +
+                        "Safe travels,<br>" +
+                        "Airline Team";
+                break;
+
             default:
                 throw new IllegalArgumentException("Unsupported email type");
         }

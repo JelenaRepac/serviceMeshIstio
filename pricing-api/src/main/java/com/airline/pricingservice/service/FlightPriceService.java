@@ -1,4 +1,4 @@
-package com.airline.pricingservice.service.impl;
+package com.airline.pricingservice.service;
 
 import com.airlines.airlinesharedmodule.FlightPrice;
 

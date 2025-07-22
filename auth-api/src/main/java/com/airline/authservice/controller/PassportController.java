@@ -1,7 +1,7 @@
 package com.airline.authservice.controller;
 
-import com.airline.authservice.dto.MessageDto;
 import com.airline.authservice.service.PassportService;
+import com.airlines.airlinesharedmodule.MessageDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
