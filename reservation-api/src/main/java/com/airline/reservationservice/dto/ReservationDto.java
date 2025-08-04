@@ -1,5 +1,6 @@
 package com.airline.reservationservice.dto;
 
+import com.airlines.airlinesharedmodule.FlightSchedule;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -17,7 +18,7 @@ public class ReservationDto {
     private Long userId;
     private Boolean confirmed;
     private LocalDateTime reservedAt;
-
+    private FlightSchedule flightSchedule;
     private String voucherId;
 
 }

@@ -1,7 +1,7 @@
 package com.airline.reservationservice.mapper;
 
 import com.airline.reservationservice.dto.ReservationDto;
-import com.airline.reservationservice.model.Reservation;
+import com.airlines.airlinesharedmodule.Reservation;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,7 +13,8 @@ public class ReservationMapper {
         reservation.setId(dto.getId());
         reservation.setSeatNumber(dto.getSeatNumber());
         reservation.setUserId(dto.getUserId());
-        reservation.setFlightScheduleId(dto.getFlightScheduleId());
+        reservation.setFlightSchedule(dto.getFlightSchedule());
+//        reservation.setFlightScheduleId(dto.getFlightScheduleId());
         reservation.setConfirmed(dto.getConfirmed());
         reservation.setReservedAt(dto.getReservedAt());
         return reservation;
@@ -24,7 +25,8 @@ public class ReservationMapper {
         dto.setId(entity.getId());
         dto.setSeatNumber(entity.getSeatNumber());
         dto.setUserId(entity.getUserId());
-        dto.setFlightScheduleId(entity.getFlightScheduleId());
+        dto.setFlightSchedule(entity.getFlightSchedule());
+//        dto.setFlightScheduleId(entity.getFlightScheduleId());
         dto.setConfirmed(entity.getConfirmed());
         dto.setReservedAt(entity.getReservedAt());
         return dto;

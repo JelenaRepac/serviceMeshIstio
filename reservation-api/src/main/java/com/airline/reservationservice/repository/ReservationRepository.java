@@ -1,6 +1,6 @@
 package com.airline.reservationservice.repository;
 
-import com.airline.reservationservice.model.Reservation;
+import com.airlines.airlinesharedmodule.Reservation;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

@@ -27,8 +27,9 @@ public class FlightScheduleController {
             @RequestParam(value = "from", required = false) String from,
             @RequestParam(value = "to", required = false) String to,
             @RequestParam(value = "departureDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
-            @RequestParam(value = "arrivalDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate arrivalDate
-    ) {
+            @RequestParam(value = "arrivalDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate arrivalDate,
+            @RequestParam(value="numberOfPassangers", required = false) Integer numberOfPassangers){
+
         FlightScheduleFilter filter = new FlightScheduleFilter();
         filter.setFrom(from);
         filter.setTo(to);
@@ -38,7 +39,7 @@ public class FlightScheduleController {
         boolean hasFilter = from != null || to != null || departureDate != null || arrivalDate != null;
 
         if (hasFilter) {
-            List<FlightSchedule> results = flightScheduleService.searchSchedules(filter);
+            List<FlightSchedule> results = flightScheduleService.searchSchedules(filter,numberOfPassangers);
             return ResponseEntity.ok(results);
         }
 

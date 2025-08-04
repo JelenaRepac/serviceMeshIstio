@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface VoucherService {
 
-    Voucher getVoucher(Long id);
+    Voucher getVoucher(String id);
     Voucher createVoucher(Voucher dto);
     Voucher assignVoucher(String code, Long userId);
     boolean validateVoucher(String code, Long userId);

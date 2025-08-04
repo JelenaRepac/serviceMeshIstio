@@ -5,6 +5,7 @@ import com.airline.flightservice.dto.FlightScheduleSeatInformationInputDto;
 import com.airline.flightservice.kafka.event.NewFlightScheduleEvent;
 import com.airline.flightservice.repository.FlightRepository;
 import com.airline.flightservice.repository.FlightScheduleRepository;
+import com.airline.flightservice.repository.FlightScheduleSeatInformationRepository;
 import com.airline.flightservice.service.FlightScheduleSeatInformationService;
 import com.airline.flightservice.service.FlightScheduleService;
 import com.airline.flightservice.specification.FlightScheduleSpecification;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class FlightScheduleServiceImpl implements FlightScheduleService {
@@ -25,14 +27,16 @@ public class FlightScheduleServiceImpl implements FlightScheduleService {
     private final FlightScheduleRepository flightScheduleRepository;
     private final FlightScheduleSeatInformationService flightScheduleSeatInformationService;
     private final FlightRepository flightRepository;
+    private final FlightScheduleSeatInformationRepository flightScheduleSeatInformationRepository;
 
     private final KafkaTemplate<String, NewFlightScheduleEvent> kafkaTemplate;
 
     public FlightScheduleServiceImpl(FlightScheduleRepository flightScheduleRepository, FlightScheduleSeatInformationService flightScheduleSeatInformationService,
-                                     FlightRepository flightRepository, KafkaTemplate<String, NewFlightScheduleEvent> kafkaTemplate) {
+                                     FlightRepository flightRepository, FlightScheduleSeatInformationRepository flightScheduleSeatInformationRepository, KafkaTemplate<String, NewFlightScheduleEvent> kafkaTemplate) {
         this.flightScheduleRepository = flightScheduleRepository;
         this.flightScheduleSeatInformationService = flightScheduleSeatInformationService;
         this.flightRepository = flightRepository;
+        this.flightScheduleSeatInformationRepository = flightScheduleSeatInformationRepository;
         this.kafkaTemplate = kafkaTemplate;
     }
 
@@ -79,9 +83,22 @@ public class FlightScheduleServiceImpl implements FlightScheduleService {
     }
 
     @Override
-    public List<FlightSchedule> searchSchedules(FlightScheduleFilter filter) {
+    public List<FlightSchedule> searchSchedules(FlightScheduleFilter filter, Integer numberOfPassengers) {
         Specification<FlightSchedule> spec = FlightScheduleSpecification.build(filter);
-        return flightScheduleRepository.findAll(spec);
+        List<FlightSchedule> schedules = flightScheduleRepository.findAll(spec);
+
+        if (numberOfPassengers != null) {
+            return schedules.stream()
+                    .filter(schedule -> {
+                        long availableSeats = flightScheduleSeatInformationRepository.countByFlightScheduleAndBookingStatus(schedule, false);
+                        return availableSeats >= numberOfPassengers;
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        return schedules;
+
+
     }
 
 }

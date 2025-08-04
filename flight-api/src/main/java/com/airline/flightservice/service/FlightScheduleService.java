@@ -12,5 +12,5 @@ public interface FlightScheduleService {
 
     FlightSchedule addFlightSchedule(FlightSchedule flightScheduleInputDto);
 
-    List<FlightSchedule> searchSchedules(FlightScheduleFilter filter);
+    List<FlightSchedule> searchSchedules(FlightScheduleFilter filter, Integer numberOfPassengers);
 }

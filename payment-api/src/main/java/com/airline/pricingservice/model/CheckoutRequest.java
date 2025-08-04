@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -12,7 +14,7 @@ import lombok.Setter;
 public class CheckoutRequest {
     private double amount; // iznos u evrima
     private String email;
-    private Long reservationId;
+    private List<Long> reservationId;
     private String currency;
 
 }

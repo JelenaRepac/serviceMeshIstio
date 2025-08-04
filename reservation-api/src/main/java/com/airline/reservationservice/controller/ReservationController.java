@@ -45,8 +45,8 @@ public class ReservationController {
     }
 
     @GetMapping("/user")
-    public ResponseEntity<List<ReservationDto>> getReservationByUserId(@RequestParam(value = "userId") Long userId) {
-        List<ReservationDto> reservation = reservationService.getReservationByUserId(userId);
+    public ResponseEntity<List<ReservationDto>> getReservationByUserId(@RequestParam(value = "userId") Long userId, @RequestHeader("Authorization") String authHeader) {
+        List<ReservationDto> reservation = reservationService.getReservationByUserId(userId,authHeader);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(reservation);

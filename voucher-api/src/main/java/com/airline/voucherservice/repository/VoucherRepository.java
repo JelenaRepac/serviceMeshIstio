@@ -10,4 +10,5 @@ public interface VoucherRepository extends JpaRepository<Voucher, Long> {
 
     Optional<Voucher> findByCode(String code);
     List<Voucher> findAllByUserId(Long userId);
+
 }

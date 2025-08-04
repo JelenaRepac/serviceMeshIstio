@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class VoucherServiceImpl implements VoucherService {
@@ -20,8 +21,12 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
-    public Voucher getVoucher(Long id) {
-        return voucherRepository.getById(id);
+    public Voucher getVoucher(String id) {
+        Optional<Voucher> voucher=voucherRepository.findByCode(id);
+        if(voucher.isPresent()){
+            return voucher.get();
+        }
+        return null;
     }
 
     @Override

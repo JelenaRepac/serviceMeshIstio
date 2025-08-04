@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/paymant")
+@RequestMapping("/api/payment")
 public class PaymentController {
     private final PaymentService paymentService;
     private final RemoteEmailSenderService remoteEmailSenderService;

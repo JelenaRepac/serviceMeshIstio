@@ -20,12 +20,23 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class PaymentServiceImpl implements PaymentService {
     @Value("${stripe.secret.key}")
     private String stripeSecretKey;
+
+    @Value("${reservation-service.url}")
+    private String reservationServiceUrl;
+
+    @Value("${auth-service.url}")
+    private String authServiceUrl;
+    @Value("${voucher-service.url}")
+    private String voucherServiceUrl;
 
     private final PaymentRepository paymentRepository;
 
@@ -68,60 +79,62 @@ public class PaymentServiceImpl implements PaymentService {
 
         // get user i reservation for saving payment
 
-        Reservation reservation = webClient.get()
-                .uri("http://localhost:9000/api/reservation/{id}", request.getReservationId())
-                .header(HttpHeaders.AUTHORIZATION, authHeader)
-                .retrieve()
-                .bodyToMono(Reservation.class)
-                .block();
+        List<Reservation> reservations = request.getReservationId().stream()
+                .map(id -> webClient.get()
+                        .uri(reservationServiceUrl+"/{id}", id)
+                        .header(HttpHeaders.AUTHORIZATION, authHeader)
+                        .retrieve()
+                        .bodyToMono(Reservation.class)
+                        .block())
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
-        if (reservation == null) {
-            throw new IllegalArgumentException("Reservation not found");
+        if (reservations.isEmpty()) {
+            throw new IllegalArgumentException("No valid reservations found");
         }
 
+        double totalAmount = request.getAmount();
+
         User user = webClient.get()
-                .uri(uriBuilder ->
-                        uriBuilder
-                                .scheme("http")
-                                .host("localhost")
-                                .port(8000)
-                                .path("/api/auth/profile")
-                                .queryParam("email", request.getEmail())
-                                .build())
+                .uri(authServiceUrl + "/profile?email=" + request.getEmail())
                 .header(HttpHeaders.AUTHORIZATION, authHeader)
                 .retrieve()
                 .bodyToMono(User.class)
                 .block();
+
+
 
         if (user == null) {
             throw new IllegalArgumentException("User not found");
         }
 
         // UKOLIKO POSTOJI VAUCHER
-        if (reservation.getVoucherId() != null && !reservation.getVoucherId().isBlank()) {
-            Voucher redeemedVoucher = redeemVoucher(reservation.getVoucherId() );
-
-            double discount = request.getAmount() * (redeemedVoucher.getDiscountPercentage() / 100);
-            double discountedAmount = request.getAmount() - discount;
-
-            request.setAmount(discountedAmount);
+        for (Reservation reservation : reservations) {
+            if (reservation.getVoucherId() != null && !reservation.getVoucherId().isBlank()) {
+                Voucher voucher = redeemVoucher(reservation.getVoucherId());
+                double discount = totalAmount * (voucher.getDiscountPercentage() / 100);
+                totalAmount -= discount;
+            }
         }
 
         // kreiraj payment pending status
-        Payment payment= Payment.builder()
-                .paymentProvider("Stripe")
-                .createdAt(LocalDateTime.now())
-                .amount(request.getAmount())
-                .status(PaymentStatus.PENDING.name())
-                .providerSessionId(session.getId())
-                .updatedAt(LocalDateTime.now())
-                .userEmail(request.getEmail())
-                .reservationId(request.getReservationId())
-                .userId(user.getId())
-                .currency(request.getCurrency())
-                .build();
+        for (Long reservation : request.getReservationId()) {
+            Payment payment = Payment.builder()
+                    .paymentProvider("Stripe")
+                    .createdAt(LocalDateTime.now())
+                    .amount(totalAmount)
+                    .status(PaymentStatus.PENDING.name())
+                    .providerSessionId(session.getId())
+                    .updatedAt(LocalDateTime.now())
+                    .userEmail(request.getEmail())
+                    .reservationId(reservation)
+                    .userId(user.getId())
+                    .currency(request.getCurrency())
+                    .build();
 
-        paymentRepository.save(payment);
+            paymentRepository.save(payment);
+        }
+
 
         Map<String, String> response = new HashMap<>();
         response.put("id", session.getId());
@@ -131,7 +144,7 @@ public class PaymentServiceImpl implements PaymentService {
     public Voucher redeemVoucher(String code) {
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/api/voucher/redeem")
+                        .path(voucherServiceUrl+"/redeem")
                         .queryParam("code", code)
                         .build())
                 .retrieve()

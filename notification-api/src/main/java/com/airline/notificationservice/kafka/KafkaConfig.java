@@ -5,6 +5,7 @@ import com.airline.notificationservice.kafka.event.NewFlightScheduleEvent;
 import com.airline.notificationservice.kafka.event.UpcomingFlightNotificationEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -16,6 +17,9 @@ import java.util.Map;
 @Configuration
 public class KafkaConfig {
 
+
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String bootstrapServers;
     @Bean
     public ConsumerFactory<String, EmailEvent> consumerFactory() {
         JsonDeserializer<EmailEvent> deserializer = new JsonDeserializer<>(EmailEvent.class);
@@ -25,8 +29,7 @@ public class KafkaConfig {
 
         return new DefaultKafkaConsumerFactory<>(
                 Map.of(
-                        ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",  // or your Kafka broker
-
+                        ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers,  // or your Kafka broker
 //                        ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka:29092",  // or your Kafka broker
                         ConsumerConfig.GROUP_ID_CONFIG, "email-group",
                         ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
@@ -55,8 +58,7 @@ public class KafkaConfig {
 
         return new DefaultKafkaConsumerFactory<>(
                 Map.of(
-                        ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",  // or your Kafka broker
-
+                        ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers,  // or your Kafka broker
 //                        ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka:29092",
                         ConsumerConfig.GROUP_ID_CONFIG, "notification-group",
                         ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
@@ -85,8 +87,7 @@ public class KafkaConfig {
 
         return new DefaultKafkaConsumerFactory<>(
                 Map.of(
-                        ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",  // or your Kafka broker
-
+                        ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers,  // or your Kafka broker
 //                        ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka:29092",
                         ConsumerConfig.GROUP_ID_CONFIG, "notification-group",
                         ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,

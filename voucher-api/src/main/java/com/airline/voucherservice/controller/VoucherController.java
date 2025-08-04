@@ -24,7 +24,7 @@ public class VoucherController {
         return ResponseEntity.ok(voucherService.createVoucher(dto));
     }
     @GetMapping("/{id}")
-    public ResponseEntity<Voucher> getVoucher(@PathVariable Long id) {
+    public ResponseEntity<Voucher> getVoucher(@PathVariable String id) {
         return ResponseEntity.ok(voucherService.getVoucher(id));
     }
 

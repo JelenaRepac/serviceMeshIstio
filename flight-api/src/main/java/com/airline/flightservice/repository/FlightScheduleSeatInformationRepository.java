@@ -1,6 +1,7 @@
 package com.airline.flightservice.repository;
 
 import com.airline.flightservice.model.FlightScheduleSeatInformation;
+import com.airlines.airlinesharedmodule.FlightSchedule;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,6 +12,9 @@ public interface FlightScheduleSeatInformationRepository extends JpaRepository<F
     List<FlightScheduleSeatInformation> findByFlightScheduleId(Long flightScheduleId);
     List<FlightScheduleSeatInformation> findByBookingStatus(Boolean bookingStatus);
     List<FlightScheduleSeatInformation> findBySeatType(String seatType);
+
+    long countByFlightScheduleAndBookingStatus(FlightSchedule schedule, boolean bookingStatus);
+
 
 
 }

@@ -53,7 +53,7 @@ public class ConfirmationToken {
                 .setExpiration(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION_TIME))
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
-
+        // kreiranje refresh tokena
         this.refreshToken =BEARER_TOKEN_TYPE + Jwts.builder()
                 .setSubject(user.getEmail())
                 .setExpiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION_TIME))

@@ -11,8 +11,6 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-//@Entity
-//@Table(name = "subscriber", schema = "airline_users")
 public class Subscriber {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

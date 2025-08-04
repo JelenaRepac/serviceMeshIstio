@@ -2,36 +2,29 @@ package com.airline.reservationservice.service.impl;
 
 import com.airline.reservationservice.common.ConvertToJson;
 import com.airline.reservationservice.common.MailType;
-import com.airline.reservationservice.dto.FlightScheduleResponse;
 import com.airline.reservationservice.dto.FlightScheduleSeatResponse;
 import com.airline.reservationservice.dto.ReservationDto;
 import com.airline.reservationservice.dto.UserResponse;
 import com.airline.reservationservice.exception.BadRequestCustomException;
-import com.airline.reservationservice.kafka.EmailEvent;
 import com.airline.reservationservice.kafka.UpcomingFlightNotificationEvent;
 import com.airline.reservationservice.mapper.ReservationMapper;
-import com.airline.reservationservice.model.Reservation;
 import com.airline.reservationservice.repository.ReservationRepository;
 import com.airline.reservationservice.service.RemoteEmailSenderService;
 import com.airline.reservationservice.service.ReservationService;
-import com.airlines.airlinesharedmodule.Voucher;
+import com.airlines.airlinesharedmodule.FlightSchedule;
+import com.airlines.airlinesharedmodule.Reservation;
 import lombok.extern.slf4j.Slf4j;
-import org.h2.engine.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -47,6 +40,8 @@ public class ReservationServiceImpl implements ReservationService {
     private String authServiceUrl;
     @Value("${flight-service.url}")
     private String flightScheduleUrl;
+    @Value("${voucher-service.url}")
+    private String voucherServiceUrl;
 
     // dodati generisanje tokena
     // kreirati user a job
@@ -92,7 +87,7 @@ public class ReservationServiceImpl implements ReservationService {
                     throw new BadRequestCustomException("Seat is reserved.", "400");
                 } else {
                     //REZERVACIJA
-                    flightScheduleSeatResponse.setFlightScheduleId(reservationDTO.getFlightScheduleId());
+                    flightScheduleSeatResponse.setFlightScheduleId(reservation.getFlightSchedule().getId());
                     reserveSeat(flightScheduleSeatResponse, authHeader);
                 }
             } else {
@@ -101,13 +96,13 @@ public class ReservationServiceImpl implements ReservationService {
 
             //VAUCHER
 
-            if (reservationDTO.getVoucherId() != null) {
-                boolean isValid = validateVoucher(reservationDTO.getVoucherId(), reservation.getUserId());
-                if (!isValid) {
-                    throw new IllegalArgumentException("Invalid or already used voucher");
-                }
-                    reservation.setVoucherId(reservationDTO.getVoucherId());
-            }
+//            if (reservationDTO.getVoucherId() != null && !reservationDTO.getVoucherId().isEmpty()) {
+//                boolean isValid = validateVoucher(reservationDTO.getVoucherId(), reservation.getUserId());
+//                if (!isValid) {
+//                    throw new IllegalArgumentException("Invalid or already used voucher");
+//                }
+//                    reservation.setVoucherId(reservationDTO.getVoucherId());
+//            }
 
 
             Reservation savedItem = this.reservationRepository.save(reservation);
@@ -134,12 +129,12 @@ public class ReservationServiceImpl implements ReservationService {
 
     public boolean validateVoucher(String code, Long userId) {
         WebClient webClient = WebClient.builder()
-                .baseUrl("http://localhost:8001") // <-- Set your host and port here
+                .baseUrl(voucherServiceUrl) // <-- Set your host and port here
                 .build();
 
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/api/voucher/validate")
+                        .path("/validate")
                         .queryParam("code", code)
                         .queryParam("userId", userId)
                         .build())
@@ -166,7 +161,8 @@ public class ReservationServiceImpl implements ReservationService {
 
             return ReservationDto.builder()
                     .userId(reservation.getUserId())
-                    .flightScheduleId(reservation.getFlightScheduleId())
+                    .flightSchedule(reservation.getFlightSchedule())
+//                    .flightScheduleId(reservation.getFlightScheduleId())
                     .seatNumber(reservation.getSeatNumber())
                     .reservedAt(reservation.getReservedAt())
                     .build();
@@ -197,14 +193,16 @@ public class ReservationServiceImpl implements ReservationService {
                     .orElseThrow(() -> new NoSuchElementException("Reservation not found with ID: " + id));
 
             reservation.setUserId(reservationDTO.getUserId());
-            reservation.setFlightScheduleId(reservationDTO.getFlightScheduleId());
+            reservation.setFlightSchedule(reservationDTO.getFlightSchedule());
+//            reservation.setFlightScheduleId(reservationDTO.getFlightScheduleId());
             reservation.setSeatNumber(reservationDTO.getSeatNumber());
 
             Reservation savedItem = this.reservationRepository.save(reservation);
 
             return ReservationDto.builder()
                     .userId(savedItem.getUserId())
-                    .flightScheduleId(savedItem.getFlightScheduleId())
+                    .flightSchedule(savedItem.getFlightSchedule())
+//                    .flightScheduleId(savedItem.getFlightScheduleId())
                     .seatNumber(savedItem.getSeatNumber())
                     .reservedAt(savedItem.getReservedAt())
                     .build();
@@ -215,9 +213,12 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public List<ReservationDto> getReservationByUserId(Long userId) {
+    public List<ReservationDto> getReservationByUserId(Long userId,  String authHeader) {
         try {
             List<Reservation> reservations = this.reservationRepository.findByUserId(userId);
+            for(Reservation reservation: reservations){
+                reservation.setFlightSchedule(getFlightSchedule(reservation, authHeader));
+            }
 
             if (reservations.isEmpty()) {
                 throw new NoSuchElementException("No reservations found for user ID: " + userId);
@@ -229,12 +230,12 @@ public class ReservationServiceImpl implements ReservationService {
         }
     }
 
-    public FlightScheduleResponse getFlightSchedule(Reservation reservation, String authHeader) {
+    public FlightSchedule getFlightSchedule(Reservation reservation, String authHeader) {
         return webClient.get()
-                .uri(flightScheduleUrl + "/" + reservation.getFlightScheduleId())
+                .uri(flightScheduleUrl + "/" + reservation.getFlightSchedule().getId())
                 .header(HttpHeaders.AUTHORIZATION, authHeader)
                 .retrieve()
-                .bodyToMono(FlightScheduleResponse.class)
+                .bodyToMono(FlightSchedule.class)
                 .block();
     }
 
@@ -248,7 +249,7 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     public List<FlightScheduleSeatResponse> getSeatInfoByFlightScheduleIdAndSeatNumber(Reservation reservation, String authHeader) {
-        String url = flightScheduleUrl + "/seat/" + reservation.getFlightScheduleId()
+        String url = flightScheduleUrl + "/seat/" + reservation.getFlightSchedule().getId()
                 + "?seatNumber=" + reservation.getSeatNumber();
 
         return webClient.get()
@@ -285,7 +286,7 @@ public class ReservationServiceImpl implements ReservationService {
         List<Reservation> allReservations = reservationRepository.findAll();
 
         for (Reservation reservation : allReservations) {
-            FlightScheduleResponse schedule = getFlightSchedule(reservation, jobToken);
+            FlightSchedule schedule = getFlightSchedule(reservation, jobToken);
 
             if (schedule == null) continue;
 

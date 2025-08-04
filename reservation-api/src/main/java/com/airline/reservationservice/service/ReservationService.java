@@ -16,5 +16,5 @@ public interface ReservationService {
 
     ReservationDto updateReservation(Integer id, ReservationDto reservationDTO);
 
-    List<ReservationDto> getReservationByUserId(Long userId);
+    List<ReservationDto> getReservationByUserId(Long userId, String authHeader);
 }

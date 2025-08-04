@@ -77,9 +77,6 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("User with this username already exists");
         }
 
-        ConfirmationToken confirmationToken;
-
-
         String encodedPassword = encoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
 
@@ -87,11 +84,16 @@ public class UserServiceImpl implements UserService {
         user.setSecretKey(secretKey);
         user.setTwoFactorEnabled(true);
 
+        // CUVANJE USER A
         userRepository.save(user);
 
-        confirmationToken = new ConfirmationToken(user);
+        //KREIRANJE TOKENA
+        ConfirmationToken confirmationToken = new ConfirmationToken(user);
         confirmationTokenRepository.save(confirmationToken);
 
+
+        // DVOFAKTORSKA AUTENTIFIKACIJA
+        // GENERISANJE QR KODA
         String email = user.getEmail();
         String issuer = "YourAppName";
         String barCodeUrl = TwoFactorAuthentication.getGoogleAuthenticatorBarCode(secretKey, email, issuer);
@@ -119,12 +121,13 @@ public class UserServiceImpl implements UserService {
         }
 
         String expectedCode = TwoFactorAuthentication.getTOTPCode(user.getSecretKey());
-        System.out.println(expectedCode);
+
         Boolean value = expectedCode.equals(code);
         if (value) {
             user.setEnabled(true);
             userRepository.save(user);
-            //slanje mejla za potvrdu naloga
+
+            //SLANJE MEJLA KAO POTVRDA DA JE NALOG USPESNO KREIRAN
             remoteEmailSenderService.sendConfirmationEmail(user.getEmail(), authHeader, MailType.ACCOUNT_CONFIRMATION);
         } else {
             throw new BadRequestCustomException("Invalid TOTP code.", "400");

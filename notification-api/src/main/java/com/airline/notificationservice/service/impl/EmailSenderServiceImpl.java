@@ -2,6 +2,7 @@ package com.airline.notificationservice.service.impl;
 
 import com.airline.notificationservice.common.MailType;
 import com.airline.notificationservice.service.EmailSenderService;
+import com.airline.notificationservice.service.NotificationService;
 import com.mailjet.client.ClientOptions;
 import com.mailjet.client.MailjetClient;
 import com.mailjet.client.MailjetRequest;
@@ -12,6 +13,7 @@ import com.mailjet.client.resource.Emailv31;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,7 +23,8 @@ public class EmailSenderServiceImpl implements EmailSenderService {
     private final String apiKey = "2cc95c1ec4e397076d83befed980cbfd";
     private final  String secretKey = "b559bd598c331f7f56eab8cf0bcf8f77";
 
-
+    @Autowired
+    private NotificationService notificationService;
 
     //MAILJET
     //SLANJE MEJLA ZA POTVRDU NALOGA
@@ -81,10 +84,13 @@ public class EmailSenderServiceImpl implements EmailSenderService {
                 .property(Emailv31.MESSAGES, requestBody.getJSONArray(Emailv31.MESSAGES));
 
         MailjetResponse response = client.post(request);
+        boolean success = (response.getStatus() == 200);
 
-        log.info("Confirmation mail sent");
+//        notificationService.logEmailSent(recipientEmail, subject, htmlPart, success);
 
-        if (response.getStatus() != 200) {
+        if (success) {
+            log.info("Confirmation mail sent");
+        } else {
             throw new RuntimeException("Failed to send email: " + response.getStatus() + " - " + response.getData());
         }
     }
@@ -115,9 +121,14 @@ public class EmailSenderServiceImpl implements EmailSenderService {
 
         MailjetResponse response = client.post(request);
 
-        log.info("Notification mail sent!");
+        boolean success = (response.getStatus() == 200);
 
-        if (response.getStatus() != 200) {
+        // Logovanje slanja mejla u bazu
+//        notificationService.logEmailSent(recipientEmail, subject, message, success);
+
+        if (success) {
+            log.info("Notification mail sent!");
+        } else {
             throw new RuntimeException("Failed to send email: " + response.getStatus() + " - " + response.getData());
         }
     }

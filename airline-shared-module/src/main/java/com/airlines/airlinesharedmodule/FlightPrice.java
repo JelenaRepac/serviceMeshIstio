@@ -3,6 +3,7 @@
 package com.airlines.airlinesharedmodule;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,7 +17,7 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(schema = "pricing", name = "flight_price")
+@Table(schema = "flight", name = "flight_price")
 public class FlightPrice {
 
     @Id
@@ -33,6 +34,7 @@ public class FlightPrice {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "flight_schedule_id")
+    @JsonBackReference
     private FlightSchedule flightSchedule;
 
 }
