@@ -18,7 +18,6 @@ metadata:
   name: flight-details
   labels:
     account: flight
-
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -46,4 +45,7 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 9090
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod
 ---

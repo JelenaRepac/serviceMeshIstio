@@ -1,7 +1,7 @@
-package com.airline.pricingservice.controller;
+package com.airline.flightservice.controller;
 
 
-import com.airline.pricingservice.service.FlightPriceService;
+import com.airline.flightservice.service.FlightPriceService;
 import com.airlines.airlinesharedmodule.FlightPrice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,5 +35,11 @@ public class FlightPriceController {
         flightPriceService.deletePrice(id);
         return ResponseEntity.noContent().build();
     }
+
+//    @PostMapping("/voucher")
+//    public ResponseEntity<Void> applyVoucher(@RequestParam("voucherId") String voucher){
+//
+//    }
+
 
 }

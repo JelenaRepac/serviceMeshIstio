@@ -8,4 +8,4 @@ spec:
     matchLabels:
       app: auth  # <-- This should match the label of your auth-service Deployment
   mtls:
-    mode: PERMISSIVE
+    mode: STRICT

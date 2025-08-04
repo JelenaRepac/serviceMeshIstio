@@ -17,12 +17,15 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long flightScheduleId;
+//    private Long flightScheduleId;
     private String seatNumber;
     private Long userId;
     private Boolean confirmed;
     private LocalDateTime reservedAt;
 
+    @ManyToOne
+    @JoinColumn(name = "flight_schedule_id")
+    private FlightSchedule flightSchedule;
     private String voucherId;
 
 }

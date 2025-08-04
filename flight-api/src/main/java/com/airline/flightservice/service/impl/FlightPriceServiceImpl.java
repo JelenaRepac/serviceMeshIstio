@@ -1,6 +1,7 @@
-package com.airline.pricingservice.service;
+package com.airline.flightservice.service.impl;
 
-import com.airline.pricingservice.repository.FlightPriceRepository;
+import com.airline.flightservice.repository.FlightPriceRepository;
+import com.airline.flightservice.service.FlightPriceService;
 import com.airlines.airlinesharedmodule.FlightPrice;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

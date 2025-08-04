@@ -30,8 +30,6 @@ public class RemoteEmailSenderServiceImpl implements RemoteEmailSenderService {
 
     private final String emailTopic = "email-send-topic";
 
-    @Value("${email-service.url}")
-    private String emailServiceUrl;
 
     @Override
     public void sendConfirmationEmail(String email, String token, MailType mailType) {

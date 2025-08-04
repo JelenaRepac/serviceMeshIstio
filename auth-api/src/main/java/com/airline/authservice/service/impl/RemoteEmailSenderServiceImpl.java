@@ -17,8 +17,7 @@ import org.springframework.stereotype.Service;
 public class RemoteEmailSenderServiceImpl implements RemoteEmailSenderService {
 
 
-    @Value("${email-service.url}")
-    private String emailServiceUrl;
+
 
     @Autowired
     private KafkaTemplate<String, EmailEvent> kafkaTemplate;

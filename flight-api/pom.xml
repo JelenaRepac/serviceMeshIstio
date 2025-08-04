@@ -113,6 +113,12 @@
 			<artifactId>airline-shared-module</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+
+
 
 	</dependencies>
 

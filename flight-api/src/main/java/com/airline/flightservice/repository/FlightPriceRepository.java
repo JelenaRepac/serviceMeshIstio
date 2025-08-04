@@ -1,4 +1,4 @@
-package com.airline.pricingservice.repository;
+package com.airline.flightservice.repository;
 
 import com.airlines.airlinesharedmodule.FlightPrice;
 import org.springframework.data.jpa.repository.JpaRepository;

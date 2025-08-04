@@ -23,6 +23,8 @@ services:
 #      replicas: 1
 #    depends_on:
 #      - kafka
+#    environment:
+#      - SPRING_PROFILES_ACTIVE=prod   # change to prod in production
 #
 #  reservation-api:
 #    build:
@@ -38,21 +40,26 @@ services:
 #      replicas: 1
 #    depends_on:
 #      - kafka
+#    environment:
+#      - SPRING_PROFILES_ACTIVE=prod
+#      - email-service.url=http://notification-api:9090/email/send-confirmation
 #
-#  voucher-api:
-#    build:
-#      context: ../voucher-api
-#      dockerfile: Dockerfile
-#    ports:
-#      - "8001:8001"
-#    volumes:
-#      - ../voucher-api/target:/app/target
-#    networks:
-#      - istio
-#    deploy:
-#      replicas: 1
-#    depends_on:
-#      - kafka
+##  voucher-api:
+##    build:
+##      context: ../voucher-api
+##      dockerfile: Dockerfile
+##    ports:
+##      - "8001:8001"
+##    volumes:
+##      - ../voucher-api/target:/app/target
+##    networks:
+##      - istio
+##    deploy:
+##      replicas: 1
+##    depends_on:
+##      - kafka
+##    environment:
+##      - SPRING_PROFILES_ACTIVE=prod
 #
 #  subscription-api:
 #    build:
@@ -68,21 +75,8 @@ services:
 #      replicas: 1
 #    depends_on:
 #      - kafka
-#
-#  pricing-api:
-#    build:
-#      context: ../pricing-api
-#      dockerfile: Dockerfile
-#    ports:
-#      - "8082:8082"
-#    volumes:
-#      - ../pricing-api/target:/app/target
-#    networks:
-#      - istio
-#    deploy:
-#      replicas: 1
-#    depends_on:
-#      - kafka
+#    environment:
+#      - SPRING_PROFILES_ACTIVE=prod
 #
 #  notification-api:
 #    build:
@@ -96,6 +90,8 @@ services:
 #      - istio
 #    depends_on:
 #      - kafka
+#    environment:
+#      - SPRING_PROFILES_ACTIVE=prod
 #
 #  auth-api:
 #    build:
@@ -109,7 +105,9 @@ services:
 #      - istio
 #    depends_on:
 #      - kafka
-#
+#    environment:
+#      - SPRING_PROFILES_ACTIVE=prod
+
 #  frontend:
 #    build:
 #      context: ../airlines-app
@@ -127,6 +125,7 @@ services:
 #      - pricing-api
 #      - voucher-api
 
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.0
     environment:
@@ -135,6 +134,7 @@ services:
     networks:
       - istio
 
+#
   kafka:
     image: confluentinc/cp-kafka:7.6.0
     ports:
@@ -144,12 +144,28 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://host.docker.internal:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - istio
+
+# LOCAL
+#  kafka:
+#    image: confluentinc/cp-kafka:7.6.0
+#    ports:
+#      - "9092:9092"
+#    depends_on:
+#      - zookeeper
+#    environment:
+#      KAFKA_BROKER_ID: 1
+#      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+#      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+#      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+#      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+#    networks:
+#      - istio
+
 
 networks:
   istio:

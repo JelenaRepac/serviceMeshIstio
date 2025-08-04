@@ -2,10 +2,10 @@ package com.airline.notificationservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+//import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @SpringBootApplication
-@EnableMongoRepositories(basePackages = "com.airline.notificationservice.repository")
+//@EnableMongoRepositories(basePackages = "com.airline.notificationservice.repository")
 public class NotificationServiceApplication {
 
     public static void main(String[] args) {
